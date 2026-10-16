@@ -5,7 +5,9 @@ import { RouterProvider } from 'react-router/dom';
 import { routes } from '@/app/routes';
 import '@/styles/index.css';
 
-const router = createBrowserRouter(routes);
+const router = createBrowserRouter(routes, {
+  basename: import.meta.env.BASE_URL.replace(/\/$/, '') || '/',
+});
 
 const rootElement = document.getElementById('root');
 if (!rootElement) throw new Error('Root element #root not found in index.html');
