@@ -17,8 +17,8 @@ In **SQL Editor**, run each file in `supabase/migrations/` in order (0001 to 000
 | `0001_schema.sql`    | Tables, constraints, and a trigger that creates a profile for each new user             |
 | `0002_security.sql`  | Row-level security: who can read what. Anonymous visitors can read nothing.             |
 | `0003_functions.sql` | Every write (tasks, outcomes, invitations, members…) as a permission-checked function   |
-| `0005_account.sql`   | Deleting an account (history kept, name removed) or a whole circle                      |
 | `0004_schedule.sql`  | Runs the scheduler every minute. Enable **pg_cron** in **Database → Extensions** first. |
+| `0005_account.sql`   | Deleting an account (history kept, name removed) or a whole circle                      |
 
 If you use the Supabase CLI instead, `supabase db push` applies the same files.
 
