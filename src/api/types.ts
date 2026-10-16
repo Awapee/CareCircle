@@ -77,7 +77,14 @@ export interface CareCircleApi {
   onSessionChange(listener: (session: Session | null) => void): () => void;
   signUp(input: SignUpInput): Promise<{ needsEmailConfirmation: boolean }>;
   signIn(email: string, password: string): Promise<void>;
-  signOut(): Promise<void>;
+  /** `everywhere` also signs out every other device this account is signed in on. */
+  signOut(options?: { everywhere?: boolean }): Promise<void>;
+  changePassword(newPassword: string): Promise<void>;
+  /**
+   * Permanently deletes the signed-in account. Circles where they're the only member are deleted too;
+   * shared history stays with their name removed. Refused while they're the only admin of a shared circle.
+   */
+  deleteAccount(): Promise<void>;
 
   // Profile & preferences
   getProfile(): Promise<Profile>;
@@ -90,6 +97,8 @@ export interface CareCircleApi {
   createCircle(input: CircleInput): Promise<string>;
   getCircle(circleId: string): Promise<CircleBundle>;
   updateCircle(circleId: string, input: CircleSettingsInput, version: number): Promise<void>;
+  /** Deletes a circle and everything in it. `confirmName` must match the circle's name exactly. */
+  deleteCircle(circleId: string, confirmName: string): Promise<void>;
 
   // Tasks & occurrences
   listTasks(circleId: string): Promise<Task[]>;

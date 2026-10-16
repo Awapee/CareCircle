@@ -1,6 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { DemoApi } from '@/api/demo/DemoApi';
 import { buildSeed } from '@/api/demo/seed';
 import { demoApi, renderRoute } from '@/test/renderRoute';
@@ -132,5 +132,81 @@ describe('updates and notifications', () => {
     renderRoute('/app/notifications', demoApi('demo-priya'));
     await user.click(await screen.findByRole('button', { name: /mark all as read/i }));
     expect(await screen.findByRole('heading', { name: /all caught up/i })).toBeInTheDocument();
+  });
+});
+
+describe('settings', () => {
+  it('saves a new display name', async () => {
+    const user = userEvent.setup();
+    renderRoute('/app/settings', demoApi('demo-tom'));
+    const name = await screen.findByLabelText('Your name');
+    await waitFor(() => expect(name).toHaveValue('Tom'));
+    await user.clear(name);
+    await user.type(name, 'Thomas');
+    await user.click(screen.getByRole('button', { name: /save profile/i }));
+    expect(await screen.findByText('Profile saved')).toBeInTheDocument();
+    expect(screen.getAllByText(/thomas/i).length).toBeGreaterThan(0);
+  });
+
+  it('applies a larger text size straight away', async () => {
+    const user = userEvent.setup();
+    renderRoute('/app/settings', demoApi('demo-tom'));
+    await user.click(await screen.findByRole('radio', { name: 'Larger' }));
+    expect(document.documentElement.dataset.textSize).toBe('larger');
+    await user.click(screen.getByRole('radio', { name: 'Standard' }));
+    expect(document.documentElement.dataset.textSize).toBeUndefined();
+  });
+
+  it('downloads everything the account can see as JSON', async () => {
+    const user = userEvent.setup();
+    let saved: Blob | null = null;
+    URL.createObjectURL = vi.fn((b: Blob) => {
+      saved = b;
+      return 'blob:test';
+    });
+    URL.revokeObjectURL = vi.fn();
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    renderRoute('/app/settings', demoApi('demo-leo'));
+    await user.click(await screen.findByRole('button', { name: /download my data/i }));
+    await waitFor(() => expect(click).toHaveBeenCalled());
+    const data = JSON.parse(await saved!.text());
+    expect(data.profile.displayName).toBe('Leo');
+    expect(data.circles[0].tasks.length).toBeGreaterThan(0);
+    // Leo is Family, so the export can't contain medication details either.
+    expect(JSON.stringify(data)).not.toContain('Blood pressure tablet');
+    // His own private note is included; nobody else's would be.
+    expect(data.circles[0].updates.some((u: { visibility: string }) => u.visibility === 'private')).toBe(true);
+    click.mockRestore();
+  });
+
+  it('deletes an account after confirmation and returns to the home page', async () => {
+    const user = userEvent.setup();
+    renderRoute('/app/settings', demoApi('demo-sam'));
+    await user.click(await screen.findByRole('button', { name: /^delete account$/i }));
+    const dialog = await screen.findByRole('dialog', { name: /delete your account/i });
+    const confirm = within(dialog).getByRole('button', { name: /delete my account/i });
+    expect(confirm).toBeDisabled();
+    await user.click(within(dialog).getByRole('checkbox'));
+    await user.click(confirm);
+    expect(await screen.findByRole('heading', { name: /everyday care, made easier together/i })).toBeInTheDocument();
+  });
+
+  it('explains why the only admin of a shared circle can’t delete their account yet', async () => {
+    const user = userEvent.setup();
+    renderRoute('/app/settings', demoApi('demo-priya'));
+    await user.click(await screen.findByRole('button', { name: /^delete account$/i }));
+    const dialog = await screen.findByRole('dialog');
+    await user.click(within(dialog).getByRole('checkbox'));
+    await user.click(within(dialog).getByRole('button', { name: /delete my account/i }));
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent(/make someone else an admin first/i);
+  });
+});
+
+describe('signing out', () => {
+  it('returns to the home page, not the sign-in page', async () => {
+    const user = userEvent.setup();
+    renderRoute('/app', demoApi('demo-tom'));
+    await user.click((await screen.findAllByRole('button', { name: /leave demo/i }))[0]!);
+    expect(await screen.findByRole('heading', { name: /everyday care, made easier together/i })).toBeInTheDocument();
   });
 });

@@ -162,8 +162,21 @@ export class SupabaseApi implements CareCircleApi {
     if (error) throw new ApiError('invalid', 'That email and password don’t match an account.');
   }
 
-  async signOut() {
-    await this.sb.auth.signOut();
+  async signOut(options: { everywhere?: boolean } = {}) {
+    await this.sb.auth.signOut({ scope: options.everywhere ? 'global' : 'local' });
+    this.userId = null;
+  }
+
+  async changePassword(newPassword: string) {
+    if (newPassword.length < 8) throw new ApiError('invalid', 'Use at least 8 characters.');
+    const { error } = await this.sb.auth.updateUser({ password: newPassword });
+    if (error) throw new ApiError('invalid', error.message);
+  }
+
+  async deleteAccount() {
+    await this.rpc('delete_my_account', {});
+    // The account no longer exists; clear the local session too.
+    await this.sb.auth.signOut({ scope: 'local' });
     this.userId = null;
   }
 
@@ -291,6 +304,10 @@ export class SupabaseApi implements CareCircleApi {
       p_shared_notes: input.sharedNotes,
       p_version: version,
     });
+  }
+
+  async deleteCircle(circleId: string, confirmName: string) {
+    await this.rpc('delete_circle', { p_circle: circleId, p_confirm_name: confirmName });
   }
 
   // Tasks ---------------------------------------------------------------------

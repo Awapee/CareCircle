@@ -253,6 +253,55 @@ export class DemoApi implements CareCircleApi, DemoControls {
     this.emit();
   }
 
+  async changePassword() {
+    fail('invalid', 'Demo accounts don’t have passwords.');
+  }
+
+  /** Same rules as `delete_my_account()`. */
+  async deleteAccount() {
+    const me = this.me();
+    const mine = this.db.members.filter((m) => m.userId === me);
+    for (const m of mine) {
+      const others = this.db.members.some((o) => o.circleId === m.circleId && o.userId !== me);
+      if (m.role === 'admin' && this.adminCount(m.circleId) === 1 && others) {
+        fail(
+          'invalid',
+          'You’re the only admin of a circle with other members. Make someone else an admin first, or delete the circle.',
+        );
+      }
+    }
+    for (const m of mine) {
+      if (!this.db.members.some((o) => o.circleId === m.circleId && o.userId !== me)) this.removeCircleData(m.circleId);
+    }
+    const name = displayName(this.db, me).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const pattern = new RegExp(`\\b${name}\\b`, 'g');
+    const myCircles = new Set(mine.map((m) => m.circleId));
+    for (const a of this.db.activity) {
+      if (myCircles.has(a.circleId)) a.summary = a.summary.replace(pattern, 'A former member');
+      if (a.actorId === me) a.actorId = null;
+    }
+    this.db.updates = this.db.updates
+      .filter((u) => !(u.authorId === me && u.visibility === 'private'))
+      .map((u) => (u.authorId === me ? { ...u, authorId: null } : u));
+    this.db.acks = this.db.acks.filter((a) => a.userId !== me);
+    for (const t of this.db.tasks) {
+      if (t.assigneeId === me) t.assigneeId = null;
+      if (t.createdBy === me) t.createdBy = null;
+    }
+    for (const o of this.db.occurrences) {
+      if (o.assigneeOverride === me) o.assigneeOverride = null;
+      if (o.outcomeBy === me) o.outcomeBy = null;
+    }
+    this.db.members = this.db.members.filter((m) => m.userId !== me);
+    this.db.followUps = this.db.followUps.filter((f) => f.userId !== me);
+    this.db.notifications = this.db.notifications.filter((n) => n.recipientId !== me);
+    this.db.prefs = this.db.prefs.filter((p) => p.userId !== me);
+    this.db.users = this.db.users.filter((u) => u.id !== me);
+    this.db.sessionUserId = null;
+    this.commit();
+    this.emit();
+  }
+
   // ---------------------------------------------------------------------------
   // Profile & preferences
 
@@ -359,6 +408,36 @@ export class DemoApi implements CareCircleApi, DemoControls {
     });
     this.log(circleId, 'circle_updated', `${displayName(this.db, this.me())} updated the circle settings`, circleId);
     this.commit();
+  }
+
+  async deleteCircle(circleId: string, confirmName: string) {
+    this.require(circleId, 'edit_circle');
+    if (confirmName.trim() !== this.circle(circleId).name)
+      fail('invalid', 'Type the circle’s name exactly to confirm.');
+    this.removeCircleData(circleId);
+    this.commit();
+  }
+
+  private removeCircleData(circleId: string) {
+    const taskIds = new Set(this.db.tasks.filter((t) => t.circleId === circleId).map((t) => t.id));
+    const updateIds = new Set(this.db.updates.filter((u) => u.circleId === circleId).map((u) => u.id));
+    const notificationIds = new Set(this.db.notifications.filter((n) => n.circleId === circleId).map((n) => n.id));
+    this.db.circles = this.db.circles.filter((c) => c.id !== circleId);
+    this.db.members = this.db.members.filter((m) => m.circleId !== circleId);
+    this.db.careProfiles = this.db.careProfiles.filter((p) => p.circleId !== circleId);
+    this.db.tasks = this.db.tasks.filter((t) => t.circleId !== circleId);
+    for (const id of taskIds) {
+      delete this.db.medication[id];
+      delete this.db.appointments[id];
+    }
+    this.db.occurrences = this.db.occurrences.filter((o) => o.circleId !== circleId);
+    this.db.updates = this.db.updates.filter((u) => u.circleId !== circleId);
+    this.db.acks = this.db.acks.filter((a) => !updateIds.has(a.updateId));
+    this.db.activity = this.db.activity.filter((a) => a.circleId !== circleId);
+    this.db.notifications = this.db.notifications.filter((n) => n.circleId !== circleId);
+    this.db.deliveries = this.db.deliveries.filter((d) => !notificationIds.has(d.notificationId));
+    this.db.invitations = this.db.invitations.filter((i) => i.circleId !== circleId);
+    this.db.followUps = this.db.followUps.filter((f) => f.circleId !== circleId);
   }
 
   // ---------------------------------------------------------------------------

@@ -6,6 +6,9 @@ interface ApiContextValue {
   api: CareCircleApi;
   /** `undefined` while the session is still loading. */
   session: Session | null | undefined;
+  /** Where to go after a deliberate sign-out (or account deletion), instead of the sign-in page. */
+  exitPath: string | null;
+  setExitPath: (path: string | null) => void;
 }
 
 const ApiContext = createContext<ApiContextValue | null>(null);
@@ -42,6 +45,7 @@ export function ApiProvider({
 
 function SessionProvider({ api, children }: { api: CareCircleApi; children: ReactNode }) {
   const [session, setSession] = useState<Session | null | undefined>(undefined);
+  const [exitPath, setExitPath] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -50,7 +54,10 @@ function SessionProvider({ api, children }: { api: CareCircleApi; children: Reac
     const unsubscribe = api.onSessionChange((s) => {
       setSession((prev) => {
         // A different person means different data: drop everything cached for the previous one.
-        if (prev?.userId !== s?.userId) queryClient.clear();
+        // (Only cached data: clearing the mutation cache too would orphan an action still finishing,
+        // such as deleting the account, which ends the session itself.)
+        if (prev?.userId !== s?.userId) queryClient.removeQueries();
+        if (s) setExitPath(null);
         return s;
       });
     });
@@ -71,7 +78,7 @@ function SessionProvider({ api, children }: { api: CareCircleApi; children: Reac
     return () => window.clearInterval(id);
   }, [api, session, queryClient]);
 
-  return <ApiContext.Provider value={{ api, session }}>{children}</ApiContext.Provider>;
+  return <ApiContext.Provider value={{ api, session, exitPath, setExitPath }}>{children}</ApiContext.Provider>;
 }
 
 export function useApi(): CareCircleApi {
@@ -84,4 +91,27 @@ export function useSession(): Session | null | undefined {
   const ctx = useContext(ApiContext);
   if (!ctx) throw new Error('useSession must be used inside <ApiProvider>');
   return ctx.session;
+}
+
+/**
+ * Ends the session on purpose and says where to go next. Setting the destination first means the
+ * route guard sends people there, rather than to "sign in again", the moment the session ends.
+ */
+export function useEndSession() {
+  const ctx = useContext(ApiContext);
+  if (!ctx) throw new Error('useEndSession must be used inside <ApiProvider>');
+  const { setExitPath } = ctx;
+  return async (to: string, end: () => Promise<void>) => {
+    setExitPath(to);
+    try {
+      await end();
+    } catch (e) {
+      setExitPath(null);
+      throw e;
+    }
+  };
+}
+
+export function useExitPath(): string | null {
+  return useContext(ApiContext)?.exitPath ?? null;
 }

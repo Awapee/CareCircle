@@ -144,3 +144,33 @@ describe('demo scheduler', () => {
     expect(recipients.map((n) => n.recipientId).sort()).toEqual(['demo-margaret', 'demo-priya', 'demo-tom']);
   });
 });
+
+describe('demo account and circle deletion', () => {
+  it('refuses to delete the only admin of a shared circle', async () => {
+    expect(await code(api('demo-priya').api.deleteAccount())).toBe('invalid');
+  });
+
+  it('removes the person, keeps shared history without their name, and drops their private notes', async () => {
+    const { api: leo, db } = api('demo-leo');
+    await leo.deleteAccount();
+    expect(db.users.some((u) => u.id === 'demo-leo')).toBe(false);
+    expect(db.members.some((m) => m.userId === 'demo-leo')).toBe(false);
+    expect(db.updates.some((u) => u.authorId === 'demo-leo')).toBe(false);
+    expect(db.updates.some((u) => u.body.includes('photo album next time'))).toBe(false);
+    expect(db.activity.some((a) => /\bLeo\b/.test(a.summary))).toBe(false);
+    expect(db.activity.some((a) => a.summary.startsWith('A former member'))).toBe(true);
+    expect(db.tasks.find((t) => t.title === 'Lunch')!.assigneeId).toBeNull();
+    expect(await leo.getSession()).toBeNull();
+  });
+
+  it('deletes a circle only for an admin who types its name', async () => {
+    expect(await code(api('demo-tom').api.deleteCircle('demo-circle', 'Margaret’s circle'))).toBe('forbidden');
+    const { api: priya, db } = api();
+    expect(await code(priya.deleteCircle('demo-circle', 'margaret'))).toBe('invalid');
+    await priya.deleteCircle('demo-circle', 'Margaret’s circle');
+    expect(db.circles).toEqual([]);
+    expect(db.tasks).toEqual([]);
+    expect(db.occurrences).toEqual([]);
+    expect(db.activity).toEqual([]);
+  });
+});

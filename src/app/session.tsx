@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router';
-import { useSession } from '@/api/ApiProvider';
+import { useExitPath, useSession } from '@/api/ApiProvider';
 import { useCircleBundle, useMyCircles } from '@/api/queries';
 import type { CircleBundle } from '@/api/types';
 import { ErrorState, LoadingState } from '@/components/ui/States';
@@ -9,8 +9,10 @@ import { can, type Action, type PermissionContext } from '@/domain/permissions';
 /** Sends signed-out visitors to sign in, then brings them back. */
 export function RequireSession({ children }: { children: ReactNode }) {
   const session = useSession();
+  const exitPath = useExitPath();
   const location = useLocation();
   if (session === undefined) return <LoadingState className="min-h-dvh" />;
+  if (!session && exitPath) return <Navigate to={exitPath} replace />;
   if (!session) {
     const next = encodeURIComponent(location.pathname + location.search + location.hash);
     return <Navigate to={`/sign-in?next=${next}`} replace />;

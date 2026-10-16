@@ -6,6 +6,7 @@ import { createQueryClient } from '@/api/ApiProvider';
 import { createApi } from '@/api/createApi';
 import { AppProviders } from '@/app/AppProviders';
 import { routes } from '@/app/routes';
+import { applyDisplayPrefs } from '@/lib/displayPrefs';
 import '@/styles/index.css';
 
 // VITE_MEMORY_ROUTER=true builds a copy that runs from a single file with no server-side
@@ -16,6 +17,8 @@ const router =
     : createBrowserRouter(routes, {
         basename: import.meta.env.BASE_URL.replace(/\/$/, '') || '/',
       });
+
+applyDisplayPrefs();
 
 const api = createApi();
 const queryClient = createQueryClient();

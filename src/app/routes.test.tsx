@@ -82,14 +82,6 @@ describe('app shell', () => {
     expect(await screen.findByText(/demo mode, simulated/i)).toBeInTheDocument();
   });
 
-  it('labels unbuilt pages honestly and shows no interactive controls inside them', async () => {
-    renderRoute('/app/settings', demoApi());
-    await screen.findByRole('heading', { level: 1, name: 'Settings' });
-    const main = screen.getByRole('main');
-    expect(within(main).getByText(/planned · milestone 8/i)).toBeInTheDocument();
-    expect(within(main).queryAllByRole('button')).toHaveLength(0);
-  });
-
   it('every navigation item resolves to a real page', () => {
     for (const path of [
       '/app',

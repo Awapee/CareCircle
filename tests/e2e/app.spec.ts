@@ -60,6 +60,16 @@ test.describe('app pages: accessibility (axe, WCAG 2.1 AA)', () => {
     await page.getByRole('button', { name: 'Invite someone' }).click();
     await expect(page.getByRole('dialog', { name: 'Invite someone' })).toBeVisible();
     expect(await axe(page), 'invite form').toEqual([]);
+    await page.keyboard.press('Escape');
+
+    await page.goto('/app/settings');
+    await page.getByRole('button', { name: 'Delete account' }).click();
+    await expect(page.getByRole('dialog', { name: 'Delete your account?' })).toBeVisible();
+    expect(await axe(page), 'delete account').toEqual([]);
+    await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: 'Delete circle' }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    expect(await axe(page), 'delete circle').toEqual([]);
   });
 });
 
@@ -118,5 +128,25 @@ test.describe('app journeys in a real browser', () => {
     await signInDemo(page, 'Tom');
     await page.goto('/app/activity');
     await expect(page.getByText('Persisted across reloads')).toBeHidden();
+  });
+});
+
+test.describe('settings in a real browser', () => {
+  test('larger text survives a reload', async ({ page }) => {
+    await signInDemo(page, 'Tom');
+    await page.goto('/app/settings');
+    await page.getByRole('radio', { name: 'Larger' }).check();
+    await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('data-text-size', 'larger');
+    await expectNoHorizontalOverflow(page);
+  });
+
+  test('downloads the data export as a JSON file', async ({ page }) => {
+    await signInDemo(page, 'Leo');
+    await page.goto('/app/settings');
+    const download = page.waitForEvent('download');
+    await page.getByRole('button', { name: 'Download my data' }).click();
+    const file = await download;
+    expect(file.suggestedFilename()).toMatch(/^carecircle-data-\d{4}-\d{2}-\d{2}\.json$/);
   });
 });

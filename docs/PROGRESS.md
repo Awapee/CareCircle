@@ -145,6 +145,26 @@ A short, honest record of what has been implemented, what has been verified and 
 - `SupabaseApi` hasn't been run against a live Supabase project yet (see `supabase/README.md`).
 - Email and push delivery are not configured.
 - Changing a circle's time zone doesn't move occurrences that already exist.
-- Settings (profile, data export, account deletion) are Milestone 8 and still a labelled placeholder.
 
-## Next: Milestone 8 — Profile & settings, privacy, data export & deletion
+## Milestone 8 — Profile & settings, privacy, data export & deletion ✅
+
+- Settings page: name and personal time zone (used for quiet hours); change password and "sign out of all devices"
+  (real accounts); text size (standard, large, larger) and reduce motion, saved on the device; a plain-language privacy
+  summary; links to notification settings and leaving a circle.
+- **Download my data:** one JSON file with everything the account can see, built through the same interface as the
+  pages, so it never includes more than the person's role allows (a Family member's export has no medication details).
+- **Delete my account** (`delete_my_account()`): removes the profile, preferences, notifications and private notes and
+  any circle where they were the only member; shared records and updates stay, and history names them as "A former
+  member". Refused while they're the only admin of a shared circle.
+- **Delete circle** (`delete_circle()`): admins only, after typing the circle's exact name.
+
+**Verified:** 4 new database tests, 3 demo-backend tests, 6 journey tests (saving a name, text size, export contents
+and role limits, deleting an account, the only-admin refusal, sign-out destination) and 4 browser tests (axe on the
+delete dialogs, larger text surviving a reload without overflow, the export downloading as a `.json` file).
+`npm test`: 105 passing. `npm run test:e2e`: 68 passing.
+
+**Bug found and fixed:** signing out (and deleting an account) sent people to "sign in again" instead of the home
+page, because the route guard noticed the ended session before the planned navigation ran. Deliberate sign-outs now
+set their destination first.
+
+## Next: Milestone 9 — Hardening, end-to-end journeys, deployment guide

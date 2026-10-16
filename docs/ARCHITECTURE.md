@@ -129,5 +129,5 @@ circle's data by altering an ID or calling the API directly.
 5. Medication, meals/hydration/routines, appointments ✅
 6. Care circle, invitations, activity feed, care updates ✅
 7. Notification centre, follow-up & scheduling ✅
-8. Profile & settings, privacy, data export & deletion
+8. Profile & settings, privacy, data export & deletion ✅
 9. Hardening: end-to-end journeys, accessibility, edge cases, deployment guide

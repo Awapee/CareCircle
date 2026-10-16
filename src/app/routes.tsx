@@ -8,9 +8,9 @@ import { CirclePage } from '@/pages/app/CirclePage';
 import { DashboardPage } from '@/pages/app/DashboardPage';
 import { MedicationPage } from '@/pages/app/MedicationPage';
 import { NotificationsPage } from '@/pages/app/NotificationsPage';
-import { PlaceholderPage } from '@/pages/app/PlaceholderPage';
 import { PlannerPage } from '@/pages/app/PlannerPage';
 import { RoutinesPage } from '@/pages/app/RoutinesPage';
+import { SettingsPage } from '@/pages/app/SettingsPage';
 import { InvitePage } from '@/pages/auth/InvitePage';
 import { SignInPage, SignUpPage } from '@/pages/auth/SignInPage';
 import { WelcomePage } from '@/pages/auth/WelcomePage';
@@ -71,17 +71,7 @@ export const routes: RouteObject[] = [
       { path: 'circle', element: <CirclePage /> },
       { path: 'activity', element: <ActivityPage /> },
       { path: 'notifications', element: <NotificationsPage /> },
-      {
-        path: 'settings',
-        element: (
-          <PlaceholderPage
-            title="Settings"
-            description="Your profile, reminders, privacy and accessibility preferences."
-            milestone="Milestone 8"
-            planned={['Profile and account security', 'Accessibility preferences', 'Data export and account deletion']}
-          />
-        ),
-      },
+      { path: 'settings', element: <SettingsPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },

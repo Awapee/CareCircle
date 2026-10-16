@@ -1,7 +1,7 @@
 import { Bell, LogOut, Menu, RotateCcw, UserRound } from 'lucide-react';
 import { useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router';
-import { useApi } from '@/api/ApiProvider';
+import { useApi, useEndSession } from '@/api/ApiProvider';
 import { isDemo } from '@/api/createApi';
 import { useNotifications } from '@/api/queries';
 import { appNavItems } from '@/app/navigation';
@@ -180,13 +180,12 @@ function NavList({ unread, onNavigate }: { unread: number; onNavigate?: () => vo
 
 function SidebarFooter({ onNavigate }: { onNavigate?: () => void }) {
   const api = useApi();
-  const navigate = useNavigate();
+  const endSession = useEndSession();
   const [busy, setBusy] = useState(false);
   const signOut = async () => {
     setBusy(true);
     onNavigate?.();
-    await api.signOut();
-    navigate('/', { replace: true });
+    await endSession('/', () => api.signOut());
   };
   return (
     <div className="space-y-1 px-3 py-4 text-sm lg:border-t lg:border-line">

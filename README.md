@@ -23,7 +23,7 @@ Student project, built in milestones. See [`docs/PROGRESS.md`](docs/PROGRESS.md)
 | Medication, meals/hydration/routines, appointments    | ✅ Milestone 5           |
 | Care circle, invitations, activity feed, care updates | ✅ Milestone 6           |
 | Notification centre, follow-up, scheduling            | ✅ Milestone 7           |
-| Profile & settings, data export & deletion            | ⏳ Planned (Milestone 8) |
+| Profile & settings, data export & deletion            | ✅ Milestone 8           |
 | Hardening, deployment guide                           | ⏳ Planned (Milestone 9) |
 
 Without Supabase configured, the app runs in **demo mode**: a fictional care circle stored only in your browser, with a

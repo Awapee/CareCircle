@@ -8,7 +8,8 @@ import { PGlite, type Transaction } from '@electric-sql/pglite';
  * Docker or a hosted project.
  */
 
-const MIGRATIONS = ['0001_schema.sql', '0002_security.sql', '0003_functions.sql'];
+const MIGRATIONS = ['0001_schema.sql', '0002_security.sql', '0003_functions.sql', '0005_account.sql'];
+// 0004_schedule.sql needs the pg_cron extension, which PGlite doesn't have; run_scheduler() is called directly instead.
 
 const AUTH_STUB = `
   create role anon nologin;
