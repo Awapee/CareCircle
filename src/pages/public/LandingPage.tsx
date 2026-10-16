@@ -66,7 +66,6 @@ function Hero() {
               How It Works
             </ButtonLink>
           </div>
-          <p className="mt-5 text-sm text-ink-subtle">A coordination tool, not a medical or emergency service.</p>
         </div>
 
         <ProductPreview />
@@ -79,7 +78,7 @@ const previewTasks = [
   {
     time: '08:00',
     title: 'Morning medication',
-    meta: 'Recorded by Grace',
+    meta: 'Recorded by Ann',
     icon: Pill,
     status: 'Completed',
     tone: 'success',
@@ -92,7 +91,7 @@ const previewTasks = [
     status: 'Completed',
     tone: 'success',
   },
-  { time: '12:30', title: 'Lunch', meta: 'Assigned to Daniel', icon: ListChecks, status: 'Upcoming', tone: 'info' },
+  { time: '12:30', title: 'Lunch', meta: 'Assigned to Ram', icon: ListChecks, status: 'Upcoming', tone: 'info' },
   {
     time: '15:00',
     title: 'Physiotherapy session',
@@ -108,7 +107,7 @@ function ProductPreview() {
   return (
     <figure className="relative mx-auto w-full max-w-md lg:max-w-none">
       <p className="sr-only">
-        Illustration: a sample “Today” schedule for a fictional person named Grace, showing two completed tasks and two
+        Illustration: a sample “Today” schedule for a fictional person named Ann, showing two completed tasks and two
         upcoming ones, alongside a family update.
       </p>
       <div aria-hidden="true" className="relative">
@@ -118,11 +117,11 @@ function ProductPreview() {
         <Card padding="none" className="relative overflow-hidden shadow-raised">
           <div className="flex items-center justify-between border-b border-line px-5 py-4">
             <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-ink-subtle">Today · Grace’s circle</p>
+              <p className="text-xs font-medium uppercase tracking-wide text-ink-subtle">Today · Ann’s circle</p>
               <p className="mt-0.5 font-semibold">2 of 4 done</p>
             </div>
             <div className="flex -space-x-2">
-              {['G', 'D', 'A'].map((initial, i) => (
+              {['A', 'R', 'B'].map((initial, i) => (
                 <span
                   key={initial}
                   className={
@@ -157,11 +156,11 @@ function ProductPreview() {
         <Card className="relative -mt-4 ml-auto w-[85%] shadow-raised sm:-mr-6">
           <div className="flex gap-3">
             <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand-200 text-sm font-semibold text-brand-800">
-              D
+              R
             </span>
             <div className="min-w-0 text-sm">
               <p>
-                <span className="font-semibold">Daniel</span>{' '}
+                <span className="font-semibold">Ram</span>{' '}
                 <span className="text-ink-muted">shared an update · 09:12</span>
               </p>
               <p className="mt-1 text-ink-muted">“I’ll pick up groceries on the way over at lunch.”</p>
@@ -184,15 +183,15 @@ function SectionIntro({
   children,
   id,
 }: {
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   children?: ReactNode;
   id: string;
 }) {
   return (
     <div className="mx-auto max-w-2xl text-center">
-      <p className="text-sm font-semibold uppercase tracking-wider text-brand-600">{eyebrow}</p>
-      <h2 id={id} className="mt-3 text-3xl font-semibold sm:text-4xl">
+      {eyebrow && <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-brand-600">{eyebrow}</p>}
+      <h2 id={id} className="text-3xl font-semibold sm:text-4xl">
         {title}
       </h2>
       {children && <p className="mt-4 text-lg text-ink-muted">{children}</p>}
@@ -219,7 +218,7 @@ function ProblemSection() {
   return (
     <section aria-labelledby="problem-heading" className="py-20 sm:py-24">
       <Container>
-        <SectionIntro id="problem-heading" eyebrow="The challenge" title="Care is shared. The information often isn’t.">
+        <SectionIntro id="problem-heading" title="Care is shared. The information often isn’t.">
           Supporting someone day to day usually involves several people. Keeping everyone in step shouldn’t take more
           effort than the care itself.
         </SectionIntro>
