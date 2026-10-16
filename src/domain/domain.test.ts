@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addDays, isoWeekday, localDate, localTime, startOfIsoWeek, zonedTimeToUtc } from './dates';
+import { addDays, canonicalTimeZone, isoWeekday, localDate, localTime, startOfIsoWeek, zonedTimeToUtc } from './dates';
 import { dayMetrics } from './metrics';
 import { can } from './permissions';
 import { inQuietHours } from './quietHours';
@@ -204,5 +204,12 @@ describe('task validation', () => {
         appointment: { location: '', meetingLink: 'http://x.test', professional: '' },
       }).success,
     ).toBe(false);
+  });
+});
+
+describe('time zone names', () => {
+  it('uses the current spelling of renamed zones', () => {
+    expect(canonicalTimeZone('Asia/Katmandu')).toBe('Asia/Kathmandu');
+    expect(canonicalTimeZone('Europe/London')).toBe('Europe/London');
   });
 });

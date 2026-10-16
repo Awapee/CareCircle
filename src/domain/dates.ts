@@ -72,10 +72,28 @@ export function isValidTimeZone(timeZone: string): boolean {
   }
 }
 
+/**
+ * Some browsers still report old spellings of a few zones (e.g. "Asia/Katmandu"). Both work everywhere,
+ * so the current official name is shown and stored.
+ */
+const RENAMED_ZONES: Record<string, string> = {
+  'Asia/Katmandu': 'Asia/Kathmandu',
+  'Asia/Calcutta': 'Asia/Kolkata',
+  'Asia/Saigon': 'Asia/Ho_Chi_Minh',
+  'Asia/Rangoon': 'Asia/Yangon',
+  'Europe/Kiev': 'Europe/Kyiv',
+  'America/Godthab': 'America/Nuuk',
+  'Pacific/Enderbury': 'Pacific/Kanton',
+};
+
+export function canonicalTimeZone(zone: string): string {
+  return RENAMED_ZONES[zone] ?? zone;
+}
+
 /** The browser's time zone, falling back to UTC. */
 export function browserTimeZone(): string {
   try {
-    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+    return canonicalTimeZone(Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC');
   } catch {
     return 'UTC';
   }
