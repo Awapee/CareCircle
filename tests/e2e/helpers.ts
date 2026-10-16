@@ -1,7 +1,7 @@
 import { expect, type Page } from '@playwright/test';
 
-/** Opens the demo as Priya (admin). */
-export async function signInDemo(page: Page, name = 'Priya') {
+/** Opens the demo as Gita (admin). */
+export async function signInDemo(page: Page, name = 'Gita') {
   await page.goto('/sign-in');
   await page.getByRole('button', { name: `Continue as ${name}` }).click();
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();

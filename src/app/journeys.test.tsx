@@ -11,8 +11,8 @@ describe('signing in to the demo', () => {
   it('lets a visitor choose a person and lands on their dashboard', async () => {
     const user = userEvent.setup();
     renderRoute('/sign-in', demoApi(null));
-    await user.click(await screen.findByRole('button', { name: /continue as priya/i }));
-    expect(await screen.findByRole('heading', { level: 1, name: /priya/i })).toBeInTheDocument();
+    await user.click(await screen.findByRole('button', { name: /continue as gita/i }));
+    expect(await screen.findByRole('heading', { level: 1, name: /gita/i })).toBeInTheDocument();
     expect(screen.getByText(/scheduled today/i)).toBeInTheDocument();
   });
 
@@ -105,7 +105,7 @@ describe('care circle', () => {
     const token = await api.createInvitation('demo-circle', { role: 'family', label: '', expiresInDays: 7 });
     await api.startFresh('Nina', 'Europe/London');
     renderRoute(`/invite/${token}`, api);
-    expect(await screen.findByRole('heading', { name: /join margaret’s circle/i })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /join sita’s circle/i })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /join circle/i }));
     expect(await screen.findByRole('heading', { level: 1, name: /nina/i })).toBeInTheDocument();
   });
@@ -122,9 +122,9 @@ describe('updates and notifications', () => {
   it('posts an update to the circle', async () => {
     const user = userEvent.setup();
     renderRoute('/app/activity', demoApi('demo-tom'));
-    await user.type(await screen.findByLabelText('Update'), 'Margaret slept well.');
+    await user.type(await screen.findByLabelText('Update'), 'Sita slept well.');
     await user.click(screen.getByRole('button', { name: /post update/i }));
-    expect(await screen.findByText('Margaret slept well.')).toBeInTheDocument();
+    expect(await screen.findByText('Sita slept well.')).toBeInTheDocument();
   });
 
   it('lists notifications and marks them all as read', async () => {
@@ -140,7 +140,7 @@ describe('settings', () => {
     const user = userEvent.setup();
     renderRoute('/app/settings', demoApi('demo-tom'));
     const name = await screen.findByLabelText('Your name');
-    await waitFor(() => expect(name).toHaveValue('Tom'));
+    await waitFor(() => expect(name).toHaveValue('Ram'));
     await user.clear(name);
     await user.type(name, 'Thomas');
     await user.click(screen.getByRole('button', { name: /save profile/i }));
@@ -170,9 +170,9 @@ describe('settings', () => {
     await user.click(await screen.findByRole('button', { name: /download my data/i }));
     await waitFor(() => expect(click).toHaveBeenCalled());
     const data = JSON.parse(await saved!.text());
-    expect(data.profile.displayName).toBe('Leo');
+    expect(data.profile.displayName).toBe('Hari');
     expect(data.circles[0].tasks.length).toBeGreaterThan(0);
-    // Leo is Family, so the export can't contain medication details either.
+    // Hari is Family, so the export can't contain medication details either.
     expect(JSON.stringify(data)).not.toContain('Blood pressure tablet');
     // His own private note is included; nobody else's would be.
     expect(data.circles[0].updates.some((u: { visibility: string }) => u.visibility === 'private')).toBe(true);

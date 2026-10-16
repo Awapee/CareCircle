@@ -67,8 +67,8 @@ function DemoSignIn({ demo }: { demo: DemoApi }) {
       <Badge tone="accent">Demo mode · simulated</Badge>
       <h1 className="mt-4 text-3xl font-semibold sm:text-4xl">Try the CareCircle demo</h1>
       <p className="mt-3 max-w-2xl text-lg text-ink-muted">
-        Choose someone in Margaret’s fictional care circle. Each person has a different role, so you can see what each
-        role can see and do. Everything is invented and stays in this browser.
+        Choose someone in Sita’s fictional care circle. Each person has a different role, so you can see what each role
+        can see and do. Everything is invented and stays in this browser.
       </p>
 
       <ActionError error={error} />

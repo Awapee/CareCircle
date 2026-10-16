@@ -42,7 +42,7 @@ const meal = (over: Partial<TaskInput> = {}): TaskInput => ({
 describe('demo seed', () => {
   it('has a week of history, today, and two weeks ahead, all fictional', () => {
     const { db } = api();
-    expect(db.users.map((u) => u.displayName)).toEqual(['Priya', 'Margaret', 'Tom', 'Leo', 'Sam']);
+    expect(db.users.map((u) => u.displayName)).toEqual(['Gita', 'Sita', 'Ram', 'Hari', 'Bina']);
     const dates = new Set(db.occurrences.map((o) => o.occurrenceDate));
     expect(dates.has(addDays('2026-03-11', -6))).toBe(true);
     expect(dates.has(addDays('2026-03-11', 14))).toBe(true);
@@ -69,7 +69,7 @@ describe('demo permissions match the database rules', () => {
 
   it('lets family record only tasks assigned to them', async () => {
     const { api: leo, db } = api('demo-leo');
-    const lunch = db.tasks.find((t) => t.title === 'Lunch')!; // assigned to Leo
+    const lunch = db.tasks.find((t) => t.title === 'Lunch')!; // assigned to Hari
     const walk = db.tasks.find((t) => t.title === 'Glass of water')!; // unassigned
     const open = (taskId: string) => db.occurrences.find((o) => o.taskId === taskId && o.outcome === null)!;
     const a = open(lunch.id);
@@ -140,7 +140,7 @@ describe('demo scheduler', () => {
     const evening = db.tasks.find((t) => t.title === 'Evening tablets')!;
     const missed = db.occurrences.find((o) => o.taskId === evening.id && o.occurrenceDate === '2026-03-10')!;
     const recipients = db.notifications.filter((n) => n.occurrenceId === missed.id && n.kind === 'follow_up');
-    // Follow-up contacts (Priya, Tom) plus the assignee (Margaret).
+    // Follow-up contacts (Gita, Ram) plus the assignee (Sita).
     expect(recipients.map((n) => n.recipientId).sort()).toEqual(['demo-margaret', 'demo-priya', 'demo-tom']);
   });
 });
@@ -164,10 +164,10 @@ describe('demo account and circle deletion', () => {
   });
 
   it('deletes a circle only for an admin who types its name', async () => {
-    expect(await code(api('demo-tom').api.deleteCircle('demo-circle', 'Margaret’s circle'))).toBe('forbidden');
+    expect(await code(api('demo-tom').api.deleteCircle('demo-circle', 'Sita’s circle'))).toBe('forbidden');
     const { api: priya, db } = api();
     expect(await code(priya.deleteCircle('demo-circle', 'margaret'))).toBe('invalid');
-    await priya.deleteCircle('demo-circle', 'Margaret’s circle');
+    await priya.deleteCircle('demo-circle', 'Sita’s circle');
     expect(db.circles).toEqual([]);
     expect(db.tasks).toEqual([]);
     expect(db.occurrences).toEqual([]);

@@ -203,7 +203,7 @@ export interface Invitation {
   id: string;
   circleId: string;
   role: Role;
-  /** Optional label to help admins recognise the invitation, e.g. "Sam's phone". */
+  /** Optional label to help admins recognise the invitation, e.g. "Bina's phone". */
   label: string;
   createdBy: string | null;
   createdAt: string;

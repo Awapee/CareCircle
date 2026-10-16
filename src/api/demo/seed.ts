@@ -14,15 +14,15 @@ export const DEMO_PEOPLE: (DemoUser & { role: Role })[] = [
   {
     id: 'demo-priya',
     email: 'priya@demo.carecircle',
-    displayName: 'Priya',
+    displayName: 'Gita',
     timeZone: TZ,
     role: 'admin',
-    blurb: 'Margaret’s daughter. Runs the circle.',
+    blurb: 'Sita’s daughter. Runs the circle.',
   },
   {
     id: 'demo-margaret',
     email: 'margaret@demo.carecircle',
-    displayName: 'Margaret',
+    displayName: 'Sita',
     timeZone: TZ,
     role: 'care_recipient',
     blurb: 'Receives care and manages her own routine.',
@@ -30,7 +30,7 @@ export const DEMO_PEOPLE: (DemoUser & { role: Role })[] = [
   {
     id: 'demo-tom',
     email: 'tom@demo.carecircle',
-    displayName: 'Tom',
+    displayName: 'Ram',
     timeZone: TZ,
     role: 'caregiver',
     blurb: 'Visiting carer on weekday mornings.',
@@ -38,7 +38,7 @@ export const DEMO_PEOPLE: (DemoUser & { role: Role })[] = [
   {
     id: 'demo-leo',
     email: 'leo@demo.carecircle',
-    displayName: 'Leo',
+    displayName: 'Hari',
     timeZone: TZ,
     role: 'family',
     blurb: 'Grandson. Helps with lunch and the bins.',
@@ -46,7 +46,7 @@ export const DEMO_PEOPLE: (DemoUser & { role: Role })[] = [
   {
     id: 'demo-sam',
     email: 'sam@demo.carecircle',
-    displayName: 'Sam',
+    displayName: 'Bina',
     timeZone: TZ,
     role: 'read_only',
     blurb: 'Neighbour. Keeps an eye on the schedule.',
@@ -82,13 +82,13 @@ export function buildSeed(now: Date): DemoDb {
   const random = rng(42);
 
   const db: DemoDb = {
-    schema: 2,
+    schema: 3,
     users: DEMO_PEOPLE.map(({ role: _role, ...u }) => u),
     sessionUserId: null,
     circles: [
       {
         id: 'demo-circle',
-        name: 'Margaret’s circle',
+        name: 'Sita’s circle',
         timeZone: TZ,
         familyCanSeeMedication: false,
         createdAt,
@@ -104,7 +104,7 @@ export function buildSeed(now: Date): DemoDb {
     careProfiles: [
       {
         circleId: 'demo-circle',
-        preferredName: 'Margaret',
+        preferredName: 'Sita',
         sharedNotes: 'Prefers tea to coffee. Hard of hearing on the left side, so ring the bell twice.',
         version: 1,
       },
@@ -257,7 +257,7 @@ export function buildSeed(now: Date): DemoDb {
     db.tasks.push(task);
     if (s.medication) db.medication[id] = s.medication;
     if (s.appointment) db.appointments[id] = s.appointment;
-    log(db, 'demo-circle', 'demo-priya', 'task_created', `Priya added “${s.title}”`, id, new Date(createdAt));
+    log(db, 'demo-circle', 'demo-priya', 'task_created', `Gita added “${s.title}”`, id, new Date(createdAt));
     generateOccurrences(db, task, task.startDate, addDays(today, 14), null);
   }
 
@@ -279,7 +279,7 @@ export function buildSeed(now: Date): DemoDb {
     const roll = random();
     if (task.title === 'Morning tablets' && o.occurrenceDate === addDays(today, -3)) {
       outcome = 'not_taken';
-      note = 'Margaret felt unwell and didn’t want breakfast. Will try again tomorrow.';
+      note = 'Sita felt unwell and didn’t want breakfast. Will try again tomorrow.';
     } else if (task.category === 'hydration' && roll < 0.15) {
       outcome = 'skipped';
       note = 'Had a cup of tea instead.';
@@ -337,7 +337,7 @@ export function buildSeed(now: Date): DemoDb {
 
   const physio = update(
     'demo-priya',
-    'Physio is booked for this week. I’ll drive Margaret there and back. Tom, no need to do the walk that day.',
+    'Physio is booked for this week. I’ll drive Sita there and back. Ram, no need to do the walk that day.',
     30,
   );
   db.acks.push({
@@ -351,13 +351,13 @@ export function buildSeed(now: Date): DemoDb {
     'demo-circle',
     'demo-tom',
     'update_acknowledged',
-    'Tom acknowledged an update',
+    'Ram acknowledged an update',
     physio.id,
     new Date(physio.at.getTime() + 2 * 3_600_000),
   );
   update(
     'demo-tom',
-    'Margaret enjoyed her walk to the park today and ate a full lunch. She asked about the photo album.',
+    'Sita enjoyed her walk to the park today and ate a full lunch. She asked about the photo album.',
     6,
   );
   update('demo-leo', 'Bring the photo album next time I visit.', 4, 'private');

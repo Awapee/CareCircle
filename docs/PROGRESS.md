@@ -181,7 +181,7 @@ set their destination first.
 - Remaining em dashes removed from page text and the browser tab title.
 
 **Verified:** a browser journey across three people (an admin adds a task for a caregiver, the caregiver marks it done,
-a family member sees "Tom marked … as done" in history); the manifest and every icon are served; the demo opens offline
+a family member sees "Ram marked … as done" in history); the manifest and every icon are served; the demo opens offline
 after one visit, checked both at `/` and under `/CareCircle/` as GitHub Pages serves it. `npm test`: 105 passing.
 `npm run test:e2e`: 76 passing.
 

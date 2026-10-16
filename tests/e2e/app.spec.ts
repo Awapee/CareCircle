@@ -24,6 +24,7 @@ async function axe(page: Page) {
 
 test.describe('app pages: accessibility (axe, WCAG 2.1 AA)', () => {
   test('every app page, as an admin', async ({ page }) => {
+    test.setTimeout(90_000); // a dozen pages, each scanned in full
     await signInDemo(page);
     for (const path of appPages) {
       await page.goto(path);
@@ -33,7 +34,7 @@ test.describe('app pages: accessibility (axe, WCAG 2.1 AA)', () => {
   });
 
   test('pages seen by a family member and a read-only member', async ({ page }) => {
-    for (const name of ['Leo', 'Sam']) {
+    for (const name of ['Hari', 'Bina']) {
       await signInDemo(page, name);
       for (const path of ['/app', '/app/medication', '/app/circle']) {
         await page.goto(path);
@@ -116,7 +117,7 @@ test.describe('app journeys in a real browser', () => {
   });
 
   test('the demo survives a reload and can be reset', async ({ page }) => {
-    await signInDemo(page, 'Tom');
+    await signInDemo(page, 'Ram');
     await page.goto('/app/activity');
     await page.getByRole('textbox', { name: 'Update' }).fill('Persisted across reloads');
     await page.getByRole('button', { name: 'Post update' }).click();
@@ -125,7 +126,7 @@ test.describe('app journeys in a real browser', () => {
     await expect(page.getByText('Persisted across reloads')).toBeVisible();
     await page.getByRole('button', { name: 'Reset demo' }).click();
     await page.getByRole('dialog').getByRole('button', { name: 'Reset demo' }).click();
-    await signInDemo(page, 'Tom');
+    await signInDemo(page, 'Ram');
     await page.goto('/app/activity');
     await expect(page.getByText('Persisted across reloads')).toBeHidden();
   });
@@ -133,7 +134,7 @@ test.describe('app journeys in a real browser', () => {
 
 test.describe('settings in a real browser', () => {
   test('larger text survives a reload', async ({ page }) => {
-    await signInDemo(page, 'Tom');
+    await signInDemo(page, 'Ram');
     await page.goto('/app/settings');
     await page.getByRole('radio', { name: 'Larger' }).check();
     await page.reload();
@@ -142,7 +143,7 @@ test.describe('settings in a real browser', () => {
   });
 
   test('downloads the data export as a JSON file', async ({ page }) => {
-    await signInDemo(page, 'Leo');
+    await signInDemo(page, 'Hari');
     await page.goto('/app/settings');
     const download = page.waitForEvent('download');
     await page.getByRole('button', { name: 'Download my data' }).click();

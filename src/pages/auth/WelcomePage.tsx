@@ -109,7 +109,7 @@ export function WelcomePage() {
               <TextField
                 label="Circle name"
                 optional
-                placeholder={suggestedName || 'e.g. Margaret’s circle'}
+                placeholder={suggestedName || 'e.g. Sita’s circle'}
                 value={circleName}
                 onChange={(e) => setCircleName(e.target.value)}
                 error={errors.name}

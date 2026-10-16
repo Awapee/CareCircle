@@ -3,27 +3,27 @@ import { signInDemo } from './helpers';
 
 test.describe('end-to-end journeys', () => {
   test('an admin adds a task, a caregiver records it, and family see it happened', async ({ page }) => {
-    // Priya (admin) adds a task for Tom late tonight, so it's still to do whenever the test runs.
-    await signInDemo(page, 'Priya');
+    // Gita (admin) adds a task for Ram late tonight, so it's still to do whenever the test runs.
+    await signInDemo(page, 'Gita');
     await page.goto('/app/planner');
     await page.getByRole('button', { name: 'New task' }).click();
     const form = page.getByRole('dialog', { name: 'New task' });
     await form.getByLabel('Title').fill('Water the plants');
     await form.getByLabel('Time 1').fill('23:58');
-    await form.getByLabel('Assigned to').selectOption({ label: 'Tom' });
+    await form.getByLabel('Assigned to').selectOption({ label: 'Ram' });
     await form.getByRole('button', { name: 'Add task' }).click();
     await expect(form).toBeHidden();
 
-    // Tom (caregiver) sees it in today's plan and marks it done.
-    await signInDemo(page, 'Tom');
+    // Ram (caregiver) sees it in today's plan and marks it done.
+    await signInDemo(page, 'Ram');
     await page.goto('/app/planner');
     await page.getByRole('button', { name: 'Mark done: Water the plants' }).click();
     await expect(page.getByRole('button', { name: 'Mark done: Water the plants' })).toBeHidden();
 
-    // Leo (family) sees who did it in the history.
-    await signInDemo(page, 'Leo');
+    // Hari (family) sees who did it in the history.
+    await signInDemo(page, 'Hari');
     await page.goto('/app/activity?tab=history');
-    await expect(page.locator('main').getByText('Tom marked “Water the plants” as done')).toBeVisible();
+    await expect(page.locator('main').getByText('Ram marked “Water the plants” as done')).toBeVisible();
   });
 });
 
@@ -43,7 +43,7 @@ test.describe('installable app', () => {
   });
 
   test('opens the demo without a connection once it has been visited', async ({ page, context }) => {
-    await signInDemo(page, 'Priya');
+    await signInDemo(page, 'Gita');
     await page.evaluate(() => navigator.serviceWorker.ready);
     // The first load happened before the service worker took control; load once more so it has everything.
     await page.reload();

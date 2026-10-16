@@ -31,7 +31,7 @@ export type TaskRow = Omit<Task, 'medication' | 'medicationHidden' | 'appointmen
 export type OccurrenceRow = Occurrence & { followUpLoggedAt: string | null };
 
 export interface DemoDb {
-  schema: 2;
+  schema: 3;
   users: DemoUser[];
   sessionUserId: string | null;
   circles: CareCircle[];
@@ -74,7 +74,7 @@ export function loadDb(): DemoDb | null {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const db = JSON.parse(raw) as DemoDb;
-    return db.schema === 2 ? db : null;
+    return db.schema === 3 ? db : null;
   } catch {
     return null;
   }
