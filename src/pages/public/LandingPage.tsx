@@ -51,8 +51,8 @@ function Hero() {
           </h1>
           <p className="mt-5 max-w-xl text-lg text-ink-muted">
             CareCircle brings daily routines, medication reminders, meals, appointments and updates into one calm,
-            shared place — so the person receiving care and the people supporting them always know what’s planned,
-            what’s done and what needs a second look.
+            shared place, so the person receiving care and the people supporting them always know what’s planned, what’s
+            done and what needs a second look.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <ButtonLink
