@@ -7,6 +7,7 @@ import { createApi } from '@/api/createApi';
 import { AppProviders } from '@/app/AppProviders';
 import { routes } from '@/app/routes';
 import { applyDisplayPrefs } from '@/lib/displayPrefs';
+import { captureInstallPrompt, registerServiceWorker } from '@/lib/pwa';
 import '@/styles/index.css';
 
 // VITE_MEMORY_ROUTER=true builds a copy that runs from a single file with no server-side
@@ -19,6 +20,12 @@ const router =
       });
 
 applyDisplayPrefs();
+
+// A single-file preview can't install or work offline, so only the real site registers these.
+if (import.meta.env.VITE_MEMORY_ROUTER !== 'true') {
+  captureInstallPrompt();
+  registerServiceWorker();
+}
 
 const api = createApi();
 const queryClient = createQueryClient();

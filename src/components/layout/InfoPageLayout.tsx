@@ -27,7 +27,7 @@ export function InfoPageLayout({
       {updated && <p className="mt-2 text-sm text-ink-subtle">Last updated {updated}</p>}
       {intro && <p className="mt-4 text-lg text-ink-muted">{intro}</p>}
       {provisional && (
-        <Notice tone="warning" title="Draft — not yet reviewed" className="mt-6">
+        <Notice tone="warning" title="Draft: not yet reviewed" className="mt-6">
           This page is a provisional draft for a student project prototype. It has not been reviewed by a legal
           professional and must be replaced with reviewed text before any real public launch.
         </Notice>

@@ -211,7 +211,7 @@ const problems = [
   },
   {
     title: 'One person carries the mental load',
-    body: 'Coordination often falls to whoever is closest — and they rarely get a clear picture of who else can help.',
+    body: 'Coordination often falls to whoever is closest, and they rarely get a clear picture of who else can help.',
   },
 ];
 
@@ -251,7 +251,7 @@ const features = [
   {
     icon: Droplets,
     title: 'Meals & hydration',
-    body: 'Gentle reminders for meals and drinks, set to the schedule that suits the person — no one-size-fits-all targets.',
+    body: 'Gentle reminders for meals and drinks, set to the schedule that suits the person, with no one-size-fits-all targets.',
   },
   {
     icon: CalendarClock,
@@ -308,7 +308,7 @@ const steps = [
   },
   {
     title: 'Stay in step',
-    body: 'Mark tasks as done, share short updates and see what’s happened at a glance — without a string of check-in calls.',
+    body: 'Mark tasks as done, share short updates and see what’s happened at a glance, without a string of check-in calls.',
   },
 ];
 
@@ -357,7 +357,7 @@ const boundaries = [
   },
   {
     title: 'Records, not proof',
-    body: 'A task marked as done is what someone recorded — not independent confirmation.',
+    body: 'A task marked as done is what someone recorded, not independent confirmation.',
   },
   {
     title: 'Not an emergency service',

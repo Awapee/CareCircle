@@ -28,8 +28,8 @@ In **Project Settings → API**, copy the **Project URL** and the **anon public*
 
 - **Locally:** copy `.env.example` to `.env.local`, fill in both values and set `VITE_DEMO_MODE=false`.
 - **GitHub Pages:** add repository **Settings → Secrets and variables → Actions → Variables** named
-  `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` and `VITE_DEMO_MODE` (`false`), and pass them to the build step in
-  `.github/workflows/deploy.yml` (`env: VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}` and so on).
+  `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` and `VITE_DEMO_MODE` (`false`), then re-run the deploy. The workflow
+  already passes them to the build (see [`docs/DEPLOYMENT.md`](../docs/DEPLOYMENT.md)).
 
 The anon key is designed to be public: row-level security protects the data. **Never** put the `service_role` key in
 the app or in a repository variable.

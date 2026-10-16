@@ -28,6 +28,11 @@ jobs:
         env:
           # Served from https://<user>.github.io/CareCircle/
           BASE_PATH: /CareCircle/
+          # Real accounts: set these as repository variables (see docs/DEPLOYMENT.md).
+          # Left unset, the site runs in demo mode.
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+          VITE_DEMO_MODE: ${{ vars.VITE_DEMO_MODE }}
       # GitHub Pages has no SPA rewrites; serve the app for unknown paths so deep links work.
       - run: cp dist/index.html dist/404.html
       - uses: actions/upload-pages-artifact@v3

@@ -6,7 +6,7 @@ export function ContactPage() {
     <InfoPageLayout title="Contact & support" intro="How to get help with CareCircle.">
       <Notice tone="neutral" title="Support channels are not yet set up">
         CareCircle is a prototype. Official support contact details will be published here before any public launch.
-        Until then, no contact address is listed — we’d rather show nothing than an address nobody monitors.
+        Until then, no contact address is listed. We’d rather show nothing than an address nobody monitors.
       </Notice>
 
       <h2>If something is urgent</h2>

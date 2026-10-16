@@ -1,4 +1,4 @@
-import { Bell, LogOut, Menu, RotateCcw, UserRound } from 'lucide-react';
+import { Bell, LogOut, Menu, RotateCcw, UserRound, WifiOff } from 'lucide-react';
 import { useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router';
 import { useApi, useEndSession } from '@/api/ApiProvider';
@@ -12,6 +12,7 @@ import { Dialog } from '@/components/ui/Dialog';
 import { Sheet } from '@/components/ui/Sheet';
 import { ROLE_LABELS } from '@/domain/types';
 import { cn } from '@/lib/cn';
+import { useOnline } from '@/lib/pwa';
 import { useScrollToHash } from '@/lib/useScrollToHash';
 import { SkipLink } from './SkipLink';
 
@@ -46,6 +47,7 @@ export function AppShell() {
 
         <div className="min-w-0 flex-1">
           <ModeBanner />
+          <OfflineBanner />
           {/* Mobile / tablet top bar */}
           <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-2 border-b border-line bg-canvas px-4 lg:hidden">
             <Link to="/app" className="rounded-lg" aria-label="CareCircle dashboard">
@@ -255,6 +257,24 @@ function BottomNav() {
 }
 
 /** Demo mode is impossible to miss: fictional data, stored only in this browser. */
+/** Real accounts need a connection to save; the demo keeps working offline because it lives in the browser. */
+function OfflineBanner() {
+  const api = useApi();
+  const online = useOnline();
+  if (online || isDemo(api)) return null;
+  return (
+    <div role="status" className="bg-ink px-4 py-2 text-sm text-canvas">
+      <p className="mx-auto flex max-w-6xl items-center gap-2">
+        <WifiOff className="size-4 shrink-0" aria-hidden="true" />
+        <span>
+          <strong className="font-semibold">You’re offline.</strong> You can still read what’s already loaded. Changes
+          will fail until you reconnect.
+        </span>
+      </p>
+    </div>
+  );
+}
+
 function ModeBanner() {
   const api = useApi();
   const { members, userId, myRole } = useCircle();

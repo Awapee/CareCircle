@@ -14,21 +14,21 @@ coordinate and stay informed.
 Student project, built in milestones. See [`docs/PROGRESS.md`](docs/PROGRESS.md) for what is implemented and tested, and
 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the overall plan, data model and permission design.
 
-| Area                                                  | Status                   |
-| ----------------------------------------------------- | ------------------------ |
-| Design system, landing page, info pages, app layout   | ✅ Milestone 1           |
-| Domain rules, database schema, row-level security     | ✅ Milestone 2           |
-| Data layer, sign-in, onboarding, demo mode            | ✅ Milestone 3           |
-| Dashboard, planner, task management                   | ✅ Milestone 4           |
-| Medication, meals/hydration/routines, appointments    | ✅ Milestone 5           |
-| Care circle, invitations, activity feed, care updates | ✅ Milestone 6           |
-| Notification centre, follow-up, scheduling            | ✅ Milestone 7           |
-| Profile & settings, data export & deletion            | ✅ Milestone 8           |
-| Hardening, deployment guide                           | ⏳ Planned (Milestone 9) |
+| Area                                                  | Status         |
+| ----------------------------------------------------- | -------------- |
+| Design system, landing page, info pages, app layout   | ✅ Milestone 1 |
+| Domain rules, database schema, row-level security     | ✅ Milestone 2 |
+| Data layer, sign-in, onboarding, demo mode            | ✅ Milestone 3 |
+| Dashboard, planner, task management                   | ✅ Milestone 4 |
+| Medication, meals/hydration/routines, appointments    | ✅ Milestone 5 |
+| Care circle, invitations, activity feed, care updates | ✅ Milestone 6 |
+| Notification centre, follow-up, scheduling            | ✅ Milestone 7 |
+| Profile & settings, data export & deletion            | ✅ Milestone 8 |
+| Hardening, installable app, deployment guide          | ✅ Milestone 9 |
 
 Without Supabase configured, the app runs in **demo mode**: a fictional care circle stored only in your browser, with a
 permanent "Demo mode, simulated" banner. That's how the public GitHub Pages site runs. To use real accounts, follow
-[`supabase/README.md`](supabase/README.md).
+[`supabase/README.md`](supabase/README.md), then [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
 
 ## Tech stack
 

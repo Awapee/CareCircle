@@ -5,7 +5,7 @@ export function AboutPage() {
   return (
     <InfoPageLayout
       title="About CareCircle"
-      intro="CareCircle is a shared space for organising everyday care — built around the person receiving care and the people who support them."
+      intro="CareCircle is a shared space for organising everyday care, built around the person receiving care and the people who support them."
     >
       <h2>Why CareCircle exists</h2>
       <p>
@@ -25,7 +25,7 @@ export function AboutPage() {
           what is shared.
         </li>
         <li>
-          <strong>Privacy by default.</strong> Members see what their role allows — not everything automatically.
+          <strong>Privacy by default.</strong> Members see what their role allows, not everything automatically.
         </li>
         <li>
           <strong>Calm, not alarming.</strong> An unconfirmed task prompts a gentle follow-up. It is not treated as an
@@ -44,8 +44,8 @@ export function AboutPage() {
       <h2>Project status</h2>
       <p>
         CareCircle is currently a student project in active development. Demonstration content uses fictional people,
-        routines and medication names. Features that are simulated — such as notifications in demo mode — are labelled
-        as such inside the app.
+        routines and medication names. Features that are simulated (such as notifications in demo mode) are labelled as
+        such inside the app.
       </p>
     </InfoPageLayout>
   );

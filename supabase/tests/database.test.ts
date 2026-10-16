@@ -337,7 +337,14 @@ describe('scheduling', () => {
     await db.query('select public.run_scheduler()');
     await db.query('select public.run_scheduler()');
     expect(await count()).toBe(before);
-    expect(before).toBe(15); // today plus 14 days ahead
+    // Today plus 14 days ahead; today's 08:00 is left out once it has already passed.
+    expect(before).toBeGreaterThanOrEqual(14);
+    expect(before).toBeLessThanOrEqual(15);
+    const distinct = await db.query<{ n: number }>(
+      'select count(distinct occurrence_date)::int as n from task_occurrences where task_id = $1',
+      [id],
+    );
+    expect(distinct.rows[0]!.n).toBe(before);
   });
 
   it('sends one reminder and one follow-up per person, and logs the follow-up once', async () => {

@@ -12,7 +12,7 @@ export function PrivacyPage() {
       <ul>
         <li>
           <strong>Account details:</strong> your email address, display name and a securely hashed password (handled by
-          our authentication provider — we never see or store your password in readable form).
+          our authentication provider; we never see or store your password in readable form).
         </li>
         <li>
           <strong>Care information you enter:</strong> care circles, tasks, routines, medication reminder text,

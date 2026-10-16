@@ -1,4 +1,4 @@
-import { Bell, Download, KeyRound, LogOut, ShieldCheck, Trash2 } from 'lucide-react';
+import { Bell, Download, KeyRound, LogOut, ShieldCheck, Smartphone, Trash2 } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useApi, useEndSession, useSession } from '@/api/ApiProvider';
@@ -17,6 +17,7 @@ import { localDate } from '@/domain/dates';
 import { ROLE_LABELS } from '@/domain/types';
 import { profileInputSchema } from '@/domain/validation';
 import { useDisplayPrefs, type TextSize } from '@/lib/displayPrefs';
+import { isInstalled, isIos, useInstallPrompt } from '@/lib/pwa';
 import { TIME_ZONES } from '@/lib/timeZones';
 import { usePageTitle } from '@/lib/usePageTitle';
 
@@ -34,6 +35,7 @@ export function SettingsPage() {
         </ButtonLink>
       </Section>
       <Display />
+      <InstallApp />
       <Privacy />
       <YourData />
       <DangerZone />
@@ -265,6 +267,47 @@ function Display() {
         onChange={(e) => setPrefs({ ...prefs, reduceMotion: e.target.checked })}
       />
       <p className="mt-4 text-sm text-ink-subtle">These apply straight away and are saved in this browser only.</p>
+    </Section>
+  );
+}
+
+function InstallApp() {
+  const { canPrompt, install } = useInstallPrompt();
+  const toast = useToast();
+  const [installed, setInstalled] = useState(isInstalled);
+  return (
+    <Section id="install" title="Install on this device" icon={<Smartphone className="size-5" />}>
+      <p className="text-ink-muted">
+        Add CareCircle to your home screen or dock so it opens like an app, without the browser’s address bar. Pages
+        you’ve already visited still open without a connection.
+      </p>
+      {installed ? (
+        <p className="mt-4 font-medium text-brand-700">CareCircle is installed on this device.</p>
+      ) : canPrompt ? (
+        <Button
+          variant="secondary"
+          size="sm"
+          className="mt-4"
+          onClick={async () => {
+            if (await install()) {
+              setInstalled(true);
+              toast('CareCircle installed');
+            }
+          }}
+        >
+          Install CareCircle
+        </Button>
+      ) : isIos() ? (
+        <p className="mt-4">
+          On iPhone or iPad: open this site in Safari, tap <strong>Share</strong>, then{' '}
+          <strong>Add to Home Screen</strong>.
+        </p>
+      ) : (
+        <p className="mt-4">
+          Use your browser’s menu: look for <strong>Install app</strong> or <strong>Add to Home Screen</strong>. On
+          Safari for Mac, choose <strong>File › Add to Dock</strong>.
+        </p>
+      )}
     </Section>
   );
 }

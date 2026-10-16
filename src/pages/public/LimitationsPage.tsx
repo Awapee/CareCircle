@@ -18,7 +18,7 @@ export function LimitationsPage() {
           CareCircle stores the medication name and instructions <strong>you</strong> enter. It doesn’t check them.
         </li>
         <li>It never recommends a dose, a change in dose, or what to do after a missed dose.</li>
-        <li>“Marked as taken” means someone recorded it — not that the medicine was definitely taken.</li>
+        <li>“Marked as taken” means someone recorded it, not that the medicine was definitely taken.</li>
         <li>For any question about medication, ask a pharmacist, doctor or other qualified professional.</li>
       </ul>
 
@@ -37,7 +37,7 @@ export function LimitationsPage() {
 
       <h2>Meals, hydration and routines</h2>
       <p>
-        Reminders follow the schedule you set. CareCircle doesn’t give nutrition or hydration advice or impose targets —
+        Reminders follow the schedule you set. CareCircle doesn’t give nutrition or hydration advice or impose targets:
         those decisions belong to the person and the professionals supporting them.
       </p>
 
@@ -49,7 +49,7 @@ export function LimitationsPage() {
 
       <h2>Prototype status</h2>
       <p>
-        This version is a student prototype. Features shown as simulated — including notifications in demo mode — do not
+        This version is a student prototype. Features shown as simulated (including notifications in demo mode) do not
         send real messages.
       </p>
     </InfoPageLayout>

@@ -60,7 +60,7 @@ export function PublicFooter() {
       </Container>
       <div className="border-t border-line">
         <Container className="flex flex-col gap-1 py-5 text-sm text-ink-subtle sm:flex-row sm:justify-between">
-          <p>© {new Date().getFullYear()} CareCircle — student project prototype.</p>
+          <p>© {new Date().getFullYear()} CareCircle, a student project prototype.</p>
           <p>Demo content uses fictional people and data.</p>
         </Container>
       </div>

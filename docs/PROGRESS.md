@@ -167,4 +167,29 @@ delete dialogs, larger text surviving a reload without overflow, the export down
 page, because the route guard noticed the ended session before the planned navigation ran. Deliberate sign-outs now
 set their destination first.
 
-## Next: Milestone 9 — Hardening, end-to-end journeys, deployment guide
+## Milestone 9: Hardening, installable app, deployment guide ✅
+
+- **Installable app:** web app manifest and icons (including a maskable icon and an Apple touch icon), and a service
+  worker that lets the app open offline once visited. Pages are network first, so new deploys arrive on the next
+  visit; Supabase requests are never cached. Settings has an "Install on this device" section (the browser's install
+  prompt where offered, instructions for iPhone, iPad and other browsers).
+- **Offline banner** with real accounts: reading still works, and changes fail until the connection returns. The
+  demo works fully offline.
+- **Deployment guide** ([`docs/DEPLOYMENT.md`](DEPLOYMENT.md)). The Pages workflow now reads `VITE_SUPABASE_URL`,
+  `VITE_SUPABASE_ANON_KEY` and `VITE_DEMO_MODE` from repository variables, so switching to real accounts needs no code
+  change.
+- Remaining em dashes removed from page text and the browser tab title.
+
+**Verified:** a browser journey across three people (an admin adds a task for a caregiver, the caregiver marks it done,
+a family member sees "Tom marked … as done" in history); the manifest and every icon are served; the demo opens offline
+after one visit, checked both at `/` and under `/CareCircle/` as GitHub Pages serves it. `npm test`: 105 passing.
+`npm run test:e2e`: 76 passing.
+
+**Bug found and fixed:** a database test assumed today's 08:00 occurrence always exists, so it failed after 08:00
+London time. New tasks correctly skip times that have already passed; the test now allows for that.
+
+## Still open
+
+- Run sign-up, invitations and the scheduler against a live Supabase project (needs the owner's Supabase account).
+- Email and push delivery.
+- Changing a circle's time zone doesn't move occurrences that already exist.
