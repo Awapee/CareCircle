@@ -66,7 +66,7 @@ function Hero() {
               How It Works
             </ButtonLink>
           </div>
-          <p className="mt-5 text-sm text-ink-subtle">A coordination tool — not a medical or emergency service.</p>
+          <p className="mt-5 text-sm text-ink-subtle">A coordination tool, not a medical or emergency service.</p>
         </div>
 
         <ProductPreview />
