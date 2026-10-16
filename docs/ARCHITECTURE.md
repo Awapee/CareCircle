@@ -5,23 +5,23 @@ This document records the main design decisions. It is a plan: sections marked _
 
 ## 1. Key decisions
 
-| Decision                | Choice                                                                        | Reason                                                                                 |
-| ----------------------- | ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| Frontend                | Vite + React + TypeScript single-page app                                     | The app sits behind sign-in, so server rendering adds complexity without much benefit. |
-| Styling                 | Tailwind CSS with design tokens in `src/styles/index.css`                     | One small, consistent palette; components reuse the same styles.                       |
-| Accessible primitives   | Radix UI                                                                      | Dialogs and menus with correct focus management and ARIA.                              |
-| Server data _(planned)_ | TanStack Query (the only state library)                                       | Handles loading, error and stale states and cache refreshes.                           |
-| Forms _(planned)_       | React Hook Form + Zod                                                         | The same validation schemas on the client mirror database constraints.                 |
-| Backend _(planned)_     | Supabase: Postgres, Auth, row-level security (RLS), `pg_cron`, Edge Functions | Real authentication and data protection enforced inside the database.                  |
-| Dates _(planned)_       | `date-fns` + `@date-fns/tz`                                                   | Time-zone and daylight-saving-correct calculations.                                    |
+| Decision              | Choice                                                                        | Reason                                                                                 |
+| --------------------- | ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Frontend              | Vite + React + TypeScript single-page app                                     | The app sits behind sign-in, so server rendering adds complexity without much benefit. |
+| Styling               | Tailwind CSS with design tokens in `src/styles/index.css`                     | One small, consistent palette; components reuse the same styles.                       |
+| Accessible primitives | Radix UI                                                                      | Dialogs and menus with correct focus management and ARIA.                              |
+| Server data           | TanStack Query (the only state library)                                       | Handles loading, error and stale states and cache refreshes.                           |
+| Forms                 | React Hook Form + Zod                                                         | The same validation schemas on the client mirror database constraints.                 |
+| Backend               | Supabase: Postgres, Auth, row-level security (RLS), `pg_cron`, Edge Functions | Real authentication and data protection enforced inside the database.                  |
+| Dates                 | `date-fns` + `@date-fns/tz`                                                   | Time-zone and daylight-saving-correct calculations.                                    |
 
-### One data interface, two backends _(planned, Milestone 3)_
+### One data interface, two backends
 
 Every page talks to a single `CareCircleApi` TypeScript interface, which has two implementations:
 
 - **Supabase backend:** real accounts and shared data, with access enforced by RLS.
-- **Demo backend:** fictional, seeded data stored only in the browser, shown with a permanent "Demo mode — simulated"
-  banner.
+- **Demo backend:** fictional, seeded data stored only in the browser, shown with a permanent "Demo mode, simulated"
+  banner. It applies the same rules as the database functions.
 
 Pages never import Supabase directly, so the backend can be swapped without rewriting the UI.
 
@@ -65,7 +65,7 @@ Editable rows carry a `version` integer. Updates must state the version they sta
 the meantime, the update is rejected and the user is asked to review the latest version instead of silently
 overwriting it.
 
-## 2. Data model _(planned, Milestone 2)_
+## 2. Data model
 
 | Table                     | Purpose / key constraints                                                                                                                 |
 | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
@@ -89,7 +89,7 @@ overwriting it.
 Deletion: removing a circle cascades to its data. Deleting an account removes the profile and personal preferences;
 history rows others rely on keep a null or anonymised actor. All timestamps are `timestamptz` (UTC).
 
-## 3. Roles & permissions _(planned; enforced by RLS, mirrored in the UI)_
+## 3. Roles & permissions _(enforced by the database, mirrored in the UI)_
 
 | Action                             |    Admin    | Care recipient | Caregiver |             Family              | Read-only |
 | ---------------------------------- | :---------: | :------------: | :-------: | :-----------------------------: | :-------: |
@@ -102,10 +102,12 @@ history rows others rely on keep a null or anonymised actor. All timestamps are 
 | Manage members, invitations, roles |      ✓      |   view only    |     ✗     |                ✗                |     ✗     |
 | Private notes                      | Author only |                |           |                                 |           |
 
-The frontend hides actions a role cannot perform, but **the database is the real gatekeeper**. SQL tests will verify
-that a user cannot read or change another circle's data by altering an ID or calling the API directly.
+The frontend hides actions a role cannot perform, but **the database is the real gatekeeper**: RLS decides what each
+user can read, and every shared write goes through a `SECURITY DEFINER` function that checks the caller's role first
+(direct table writes are refused). SQL tests in `supabase/tests/` verify that a user cannot read or change another
+circle's data by altering an ID or calling the API directly.
 
-## 4. Scheduling & notifications _(planned, Milestone 7)_
+## 4. Scheduling & notifications
 
 - A `pg_cron` job runs a SQL function every minute. The function:
   1. creates upcoming occurrences;
@@ -121,11 +123,11 @@ that a user cannot read or change another circle's data by altering an ID or cal
 ## 5. Milestones
 
 1. Foundation & design system ✅
-2. Core rules & database (domain logic, SQL schema, RLS tests)
-3. Data layer, authentication & onboarding, demo mode
-4. Dashboard, planner, task management
-5. Medication, meals/hydration/routines, appointments
-6. Care circle, invitations, activity feed, care updates
-7. Notification centre, follow-up & scheduling
+2. Core rules & database (domain logic, SQL schema, RLS tests) ✅
+3. Data layer, authentication & onboarding, demo mode ✅
+4. Dashboard, planner, task management ✅
+5. Medication, meals/hydration/routines, appointments ✅
+6. Care circle, invitations, activity feed, care updates ✅
+7. Notification centre, follow-up & scheduling ✅
 8. Profile & settings, privacy, data export & deletion
 9. Hardening: end-to-end journeys, accessibility, edge cases, deployment guide

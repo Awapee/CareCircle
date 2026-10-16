@@ -1,7 +1,19 @@
 import type { RouteObject } from 'react-router';
+import { RequireSession, CircleGate } from '@/app/session';
 import { AppShell } from '@/components/layout/AppShell';
 import { PublicLayout } from '@/components/layout/PublicLayout';
+import { ActivityPage } from '@/pages/app/ActivityPage';
+import { AppointmentsPage } from '@/pages/app/AppointmentsPage';
+import { CirclePage } from '@/pages/app/CirclePage';
+import { DashboardPage } from '@/pages/app/DashboardPage';
+import { MedicationPage } from '@/pages/app/MedicationPage';
+import { NotificationsPage } from '@/pages/app/NotificationsPage';
 import { PlaceholderPage } from '@/pages/app/PlaceholderPage';
+import { PlannerPage } from '@/pages/app/PlannerPage';
+import { RoutinesPage } from '@/pages/app/RoutinesPage';
+import { InvitePage } from '@/pages/auth/InvitePage';
+import { SignInPage, SignUpPage } from '@/pages/auth/SignInPage';
+import { WelcomePage } from '@/pages/auth/WelcomePage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { AboutPage } from '@/pages/public/AboutPage';
 import { ContactPage } from '@/pages/public/ContactPage';
@@ -25,81 +37,40 @@ export const routes: RouteObject[] = [
       { path: 'privacy', element: <PrivacyPage /> },
       { path: 'terms', element: <TermsPage /> },
       { path: 'limitations', element: <LimitationsPage /> },
+      { path: 'sign-in', element: <SignInPage /> },
+      { path: 'sign-up', element: <SignUpPage /> },
+      { path: 'invite/:token', element: <InvitePage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },
   {
+    path: 'welcome',
+    errorElement: <RouteErrorPage />,
+    element: (
+      <RequireSession>
+        <WelcomePage />
+      </RequireSession>
+    ),
+  },
+  {
     path: 'app',
-    element: <AppShell />,
+    element: (
+      <RequireSession>
+        <CircleGate>
+          <AppShell />
+        </CircleGate>
+      </RequireSession>
+    ),
     errorElement: <RouteErrorPage />,
     children: [
-      {
-        index: true,
-        element: (
-          <PlaceholderPage
-            title="Dashboard"
-            description="Your day at a glance."
-            milestone="Milestone 4"
-            planned={[
-              'A personal greeting and today’s date',
-              'Scheduled, completed, upcoming and needs-review counts from real task data',
-              'Today’s tasks in time order, upcoming appointments and recent activity',
-            ]}
-          />
-        ),
-      },
-      {
-        path: 'planner',
-        element: (
-          <PlaceholderPage
-            title="Planner"
-            description="Plan and manage tasks, routines and appointments."
-            milestone="Milestone 4"
-            planned={[
-              'Day, week and list views with date navigation',
-              'Filters by category, status and assigned person',
-              'Create, edit, complete, skip, cancel and delete tasks — including recurring ones',
-            ]}
-          />
-        ),
-      },
-      {
-        path: 'circle',
-        element: (
-          <PlaceholderPage
-            title="My Care Circle"
-            description="The people sharing care, and what each of them can see and do."
-            milestone="Milestone 6"
-            planned={['Members and their roles', 'Secure invitations', 'Permission and circle settings']}
-          />
-        ),
-      },
-      {
-        path: 'activity',
-        element: (
-          <PlaceholderPage
-            title="Activity"
-            description="A shared history of what happened and who did it."
-            milestone="Milestone 6"
-            planned={[
-              'Task completions and schedule changes',
-              'Care updates and acknowledgements',
-              'Filtering by type and person',
-            ]}
-          />
-        ),
-      },
-      {
-        path: 'notifications',
-        element: (
-          <PlaceholderPage
-            title="Notifications"
-            description="Reminders, follow-ups and updates from your circle."
-            milestone="Milestone 7"
-            planned={['Read and unread notifications', 'Links to the related task', 'Follow-up for unconfirmed tasks']}
-          />
-        ),
-      },
+      { index: true, element: <DashboardPage /> },
+      { path: 'planner', element: <PlannerPage /> },
+      { path: 'medication', element: <MedicationPage /> },
+      { path: 'appointments', element: <AppointmentsPage /> },
+      { path: 'routines', element: <RoutinesPage /> },
+      { path: 'circle', element: <CirclePage /> },
+      { path: 'activity', element: <ActivityPage /> },
+      { path: 'notifications', element: <NotificationsPage /> },
       {
         path: 'settings',
         element: (
@@ -107,11 +78,7 @@ export const routes: RouteObject[] = [
             title="Settings"
             description="Your profile, reminders, privacy and accessibility preferences."
             milestone="Milestone 8"
-            planned={[
-              'Profile and account security',
-              'Reminder preferences and quiet hours',
-              'Data export and account deletion',
-            ]}
+            planned={['Profile and account security', 'Accessibility preferences', 'Data export and account deletion']}
           />
         ),
       },

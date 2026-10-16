@@ -62,6 +62,7 @@ export interface CareCircle {
   /** Whether members with the Family role can see medication names and instructions. */
   familyCanSeeMedication: boolean;
   createdAt: string;
+  version: number;
 }
 
 export interface CircleMember {
@@ -133,6 +134,8 @@ export interface Occurrence {
   /** Per-occurrence overrides ("edit this occurrence"). */
   titleOverride: string | null;
   assigneeOverride: string | null;
+  /** Local "HH:mm" when this one occurrence was moved to a different time. */
+  timeOverride: string | null;
   version: number;
 }
 

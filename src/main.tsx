@@ -2,6 +2,9 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, createMemoryRouter } from 'react-router';
 import { RouterProvider } from 'react-router/dom';
+import { createQueryClient } from '@/api/ApiProvider';
+import { createApi } from '@/api/createApi';
+import { AppProviders } from '@/app/AppProviders';
 import { routes } from '@/app/routes';
 import '@/styles/index.css';
 
@@ -14,11 +17,16 @@ const router =
         basename: import.meta.env.BASE_URL.replace(/\/$/, '') || '/',
       });
 
+const api = createApi();
+const queryClient = createQueryClient();
+
 const rootElement = document.getElementById('root');
 if (!rootElement) throw new Error('Root element #root not found in index.html');
 
 createRoot(rootElement).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <AppProviders api={api} queryClient={queryClient}>
+      <RouterProvider router={router} />
+    </AppProviders>
   </StrictMode>,
 );

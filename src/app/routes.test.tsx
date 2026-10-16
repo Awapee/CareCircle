@@ -1,7 +1,7 @@
 import { screen, within } from '@testing-library/react';
 import { matchRoutes } from 'react-router';
 import { describe, expect, it } from 'vitest';
-import { renderRoute } from '@/test/renderRoute';
+import { demoApi, renderRoute } from '@/test/renderRoute';
 import { routes } from './routes';
 
 /** True when a path is handled by a real page rather than the catch-all 404 route. */
@@ -65,17 +65,28 @@ describe('public pages', () => {
 });
 
 describe('app shell', () => {
-  it('marks the current page in the navigation', async () => {
+  it('sends signed-out visitors to sign in', async () => {
     renderRoute('/app/planner');
+    expect(await screen.findByRole('heading', { level: 1, name: /try the carecircle demo/i })).toBeInTheDocument();
+  });
+
+  it('marks the current page in the navigation', async () => {
+    renderRoute('/app/planner', demoApi());
     await screen.findByRole('heading', { level: 1, name: 'Planner' });
     const nav = screen.getAllByRole('navigation', { name: 'Application' })[0]!;
     expect(within(nav).getByRole('link', { name: 'Planner' })).toHaveAttribute('aria-current', 'page');
   });
 
+  it('shows the demo-mode banner on every app page', async () => {
+    renderRoute('/app', demoApi());
+    expect(await screen.findByText(/demo mode, simulated/i)).toBeInTheDocument();
+  });
+
   it('labels unbuilt pages honestly and shows no interactive controls inside them', async () => {
-    renderRoute('/app');
-    const main = await screen.findByRole('main');
-    expect(within(main).getByText(/planned · milestone 4/i)).toBeInTheDocument();
+    renderRoute('/app/settings', demoApi());
+    await screen.findByRole('heading', { level: 1, name: 'Settings' });
+    const main = screen.getByRole('main');
+    expect(within(main).getByText(/planned · milestone 8/i)).toBeInTheDocument();
     expect(within(main).queryAllByRole('button')).toHaveLength(0);
   });
 
@@ -83,6 +94,9 @@ describe('app shell', () => {
     for (const path of [
       '/app',
       '/app/planner',
+      '/app/medication',
+      '/app/appointments',
+      '/app/routines',
       '/app/circle',
       '/app/activity',
       '/app/notifications',

@@ -14,20 +14,29 @@ coordinate and stay informed.
 Student project, built in milestones. See [`docs/PROGRESS.md`](docs/PROGRESS.md) for what is implemented and tested, and
 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the overall plan, data model and permission design.
 
-| Area                                                | Status                      |
-| --------------------------------------------------- | --------------------------- |
-| Design system, landing page, info pages, app layout | ✅ Milestone 1              |
-| Real sign-in, saved data (Supabase), demo mode      | ⏳ Planned (Milestones 2–3) |
-| Dashboard, planner, tasks, medication, appointments | ⏳ Planned (Milestones 4–5) |
-| Care circle, invitations, activity, notifications   | ⏳ Planned (Milestones 6–7) |
+| Area                                                  | Status                   |
+| ----------------------------------------------------- | ------------------------ |
+| Design system, landing page, info pages, app layout   | ✅ Milestone 1           |
+| Domain rules, database schema, row-level security     | ✅ Milestone 2           |
+| Data layer, sign-in, onboarding, demo mode            | ✅ Milestone 3           |
+| Dashboard, planner, task management                   | ✅ Milestone 4           |
+| Medication, meals/hydration/routines, appointments    | ✅ Milestone 5           |
+| Care circle, invitations, activity feed, care updates | ✅ Milestone 6           |
+| Notification centre, follow-up, scheduling            | ✅ Milestone 7           |
+| Profile & settings, data export & deletion            | ⏳ Planned (Milestone 8) |
+| Hardening, deployment guide                           | ⏳ Planned (Milestone 9) |
 
-The app pages under `/app` currently show clearly labelled placeholders — they contain no data and no controls.
+Without Supabase configured, the app runs in **demo mode**: a fictional care circle stored only in your browser, with a
+permanent "Demo mode, simulated" banner. That's how the public GitHub Pages site runs. To use real accounts, follow
+[`supabase/README.md`](supabase/README.md).
 
 ## Tech stack
 
-React 19 + TypeScript, Vite, Tailwind CSS v4, React Router, Radix UI (accessible dialogs), lucide icons.
-Testing: Vitest + Testing Library (unit), Playwright + axe-core (browser and accessibility).
-Planned: Supabase (Postgres, Auth, row-level security, scheduled jobs) and TanStack Query.
+React 19 + TypeScript, Vite, Tailwind CSS v4, React Router, Radix UI (accessible dialogs), lucide icons, TanStack
+Query, React Hook Form + Zod, date-fns with `@date-fns/tz`.
+Backend: Supabase (Postgres, Auth, row-level security, `pg_cron`), or the built-in demo backend.
+Testing: Vitest + Testing Library (unit and journeys), PGlite (database and RLS tests against the real migrations),
+Playwright + axe-core (browser and accessibility).
 
 ## Getting started
 
@@ -42,8 +51,9 @@ npm run dev          # start the development server, then open the URL it prints
 
 ### Environment variables
 
-Not needed yet. From Milestone 3, copy `.env.example` to `.env.local` and fill in your Supabase project URL and
-**anon** key. Never commit `.env.local`, and never put the Supabase `service_role` key in frontend code.
+Not needed for demo mode. For real accounts, copy `.env.example` to `.env.local`, fill in your Supabase project URL and
+**anon** key, and set `VITE_DEMO_MODE=false`. Never commit `.env.local`, and never put the Supabase `service_role` key
+in frontend code. See [`supabase/README.md`](supabase/README.md).
 
 ## Quality checks
 
@@ -65,15 +75,21 @@ npx playwright install chromium
 
 ```
 src/
-  app/            route table and navigation config
+  domain/         shared types and rules: status, recurrence, permissions, validation (no React, no backend)
+  api/            the CareCircleApi interface, its two backends (supabase/, demo/) and data hooks
+  app/            route table, navigation, session and active-circle context
+  features/tasks/ schedule hooks, occurrence list and dialogs, task form (shared by several pages)
   components/
-    ui/           reusable design-system components (Button, Card, Badge, Sheet…)
+    ui/           reusable design-system components (Button, Card, Dialog, Field, Toast…)
     layout/       public layout, app shell, info-page layout
     brand/        logo
-  pages/          one file per page (public/ and app/)
+  pages/          one file per page (public/, auth/ and app/)
   lib/            small shared helpers and hooks
   styles/         design tokens (colours, fonts) and base styles
   test/           test setup and helpers
+supabase/
+  migrations/     SQL schema, row-level security, write functions and the scheduler
+  tests/          database tests (run in PGlite as part of `npm test`)
 tests/e2e/        Playwright browser tests
 docs/             architecture, permissions plan and progress log
 ```

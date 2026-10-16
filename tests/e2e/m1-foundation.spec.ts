@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+import { expectNoHorizontalOverflow, signInDemo } from './helpers';
 
 const pages = [
   '/',
@@ -9,32 +10,9 @@ const pages = [
   '/privacy',
   '/terms',
   '/limitations',
-  '/app',
-  '/app/planner',
+  '/sign-in',
   '/does-not-exist',
 ];
-
-async function expectNoHorizontalOverflow(page: Page) {
-  const overflow = await page.evaluate(
-    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
-  );
-  expect(overflow, 'page should not scroll horizontally').toBeLessThanOrEqual(0);
-
-  // A parent with overflow:hidden can hide the scrollbar while still clipping content,
-  // so also check that no visible, meaningful element extends past the viewport edges.
-  const clipped = await page.evaluate(() => {
-    const width = document.documentElement.clientWidth;
-    return Array.from(document.querySelectorAll<HTMLElement>('main *'))
-      .filter((el) => !el.closest('[aria-hidden="true"]') && el.offsetParent !== null)
-      .filter((el) => {
-        const rect = el.getBoundingClientRect();
-        return rect.width > 0 && (rect.right > width + 1 || rect.left < -1);
-      })
-      .map((el) => `${el.tagName.toLowerCase()}.${el.className.toString().slice(0, 60)}`)
-      .slice(0, 5);
-  });
-  expect(clipped, 'elements extending beyond the viewport').toEqual([]);
-}
 
 test.describe('accessibility (axe, WCAG 2.1 AA)', () => {
   for (const path of pages) {
@@ -51,7 +29,7 @@ test.describe('responsive layout', () => {
   for (const width of [320, 375, 768, 1024, 1440, 1920]) {
     test(`no horizontal overflow at ${width}px`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 });
-      for (const path of ['/', '/get-started', '/privacy', '/app']) {
+      for (const path of ['/', '/get-started', '/privacy', '/sign-in']) {
         await page.goto(path);
         await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
         await expectNoHorizontalOverflow(page);
@@ -100,7 +78,7 @@ test.describe('navigation', () => {
 
   test('app sidebar is visible on desktop and the bottom bar on mobile', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto('/app');
+    await signInDemo(page);
     await expect(page.getByRole('navigation', { name: 'Application' })).toBeVisible();
     await expect(page.getByRole('navigation', { name: 'Quick navigation' })).toBeHidden();
 

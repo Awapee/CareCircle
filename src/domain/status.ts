@@ -54,7 +54,7 @@ export const OUTCOME_LABELS: Record<Outcome, string> = {
   taken: 'Mark taken',
   not_taken: 'Not taken',
   skipped: 'Skip',
-  cancelled: 'Cancel',
+  cancelled: 'Mark cancelled',
 };
 
 /** Past-tense wording for history and activity. */
