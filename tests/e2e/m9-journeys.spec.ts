@@ -5,7 +5,7 @@ test.describe('end-to-end journeys', () => {
   test('an admin adds a task, a caregiver records it, and family see it happened', async ({ page }) => {
     // Gita (admin) adds a task for Ram late tonight, so it's still to do whenever the test runs.
     await signInDemo(page, 'Gita');
-    await page.goto('/app/planner');
+    await page.goto('/demo/app/planner');
     await page.getByRole('button', { name: 'New task' }).click();
     const form = page.getByRole('dialog', { name: 'New task' });
     await form.getByLabel('Title').fill('Water the plants');
@@ -16,13 +16,13 @@ test.describe('end-to-end journeys', () => {
 
     // Ram (caregiver) sees it in today's plan and marks it done.
     await signInDemo(page, 'Ram');
-    await page.goto('/app/planner');
+    await page.goto('/demo/app/planner');
     await page.getByRole('button', { name: 'Mark done: Water the plants' }).click();
     await expect(page.getByRole('button', { name: 'Mark done: Water the plants' })).toBeHidden();
 
     // Hari (family) sees who did it in the history.
     await signInDemo(page, 'Hari');
-    await page.goto('/app/activity?tab=history');
+    await page.goto('/demo/app/activity?tab=history');
     await expect(page.locator('main').getByText('Ram marked “Water the plants” as done')).toBeVisible();
   });
 });
@@ -50,7 +50,7 @@ test.describe('installable app', () => {
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 
     await context.setOffline(true);
-    await page.goto('/app/planner');
+    await page.goto('/demo/app/planner');
     await expect(page.getByRole('heading', { level: 1, name: 'Planner' })).toBeVisible();
     // Demo data lives in this browser, so recording still works offline.
     await expect(page.locator('main ul li').first()).toBeVisible();
@@ -59,7 +59,7 @@ test.describe('installable app', () => {
 
   test('settings explains how to install it', async ({ page }) => {
     await signInDemo(page);
-    await page.goto('/app/settings');
+    await page.goto('/demo/app/settings');
     const section = page.getByRole('region', { name: 'Install on this device' });
     await expect(section).toBeVisible();
     await expect(section.getByText(/Install app|Install CareCircle|Add to Home Screen/).first()).toBeVisible();

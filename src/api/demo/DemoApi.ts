@@ -46,7 +46,7 @@ import {
   notify,
   runScheduler,
 } from './engine';
-import { buildSeed, DEMO_PEOPLE } from './seed';
+import { buildSeed, type SeedNames } from './seed';
 import { clearDb, loadDb, newId, randomToken, saveDb, sha256Hex, type DemoDb, type TaskRow } from './store';
 
 export interface DemoPersona {
@@ -56,8 +56,10 @@ export interface DemoPersona {
   blurb: string;
 }
 
-/** Extra controls only the demo has: choose who you are, reset, or start an empty account. */
+/** Extra controls only the demo has: name the circle, view it as someone else, reset. */
 export interface DemoControls {
+  /** Builds a fresh sample circle with the visitor's chosen names and signs them in as its admin. */
+  startWalkthrough(names: SeedNames): Promise<void>;
   personas(): DemoPersona[];
   switchPersona(userId: string): Promise<void>;
   startFresh(displayName: string, timeZone: string): Promise<void>;
@@ -176,15 +178,32 @@ export class DemoApi implements CareCircleApi, DemoControls {
   // Demo controls
 
   personas(): DemoPersona[] {
-    return this.db.users.map((u) => {
-      const seeded = DEMO_PEOPLE.find((p) => p.id === u.id);
-      return {
-        userId: u.id,
-        displayName: u.displayName,
-        role: this.db.members.find((m) => m.userId === u.id)?.role ?? null,
-        blurb: seeded?.blurb ?? u.blurb,
-      };
+    return this.db.users.map((u) => ({
+      userId: u.id,
+      displayName: u.displayName,
+      role: this.db.members.find((m) => m.userId === u.id)?.role ?? null,
+      blurb: u.blurb,
+    }));
+  }
+
+  async startWalkthrough(names: SeedNames) {
+    const you = validate(profileInputSchema, { displayName: names.yourName, timeZone: names.timeZone });
+    const circle = validate(circleInputSchema, {
+      name: names.circleName,
+      timeZone: names.timeZone,
+      recipientName: names.recipientName,
+      myRole: 'admin',
     });
+    clearDb();
+    this.db = buildSeed(this.now(), {
+      yourName: you.displayName,
+      recipientName: circle.recipientName,
+      circleName: circle.name,
+      timeZone: you.timeZone,
+    });
+    this.db.sessionUserId = 'demo-priya';
+    this.commit();
+    this.emit();
   }
 
   async switchPersona(userId: string) {
@@ -869,4 +888,4 @@ export class DemoApi implements CareCircleApi, DemoControls {
 }
 
 /** Fictional people available in the demo, for the sign-in screen. */
-export { DEMO_PEOPLE };
+export { DEMO_PEOPLE } from './seed';

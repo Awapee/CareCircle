@@ -8,50 +8,79 @@ import { newId, type DemoDb, type DemoUser, type TaskRow } from './store';
  * to "now" so the demo always shows a realistic week: some history, today, and what's coming.
  */
 
-const TZ = 'Europe/London';
+const DEFAULT_TZ = 'Europe/London';
 
-export const DEMO_PEOPLE: (DemoUser & { role: Role })[] = [
-  {
-    id: 'demo-priya',
-    email: 'priya@demo.carecircle',
-    displayName: 'Gita',
-    timeZone: TZ,
-    role: 'admin',
-    blurb: 'Sita’s daughter. Runs the circle.',
-  },
-  {
-    id: 'demo-margaret',
-    email: 'margaret@demo.carecircle',
-    displayName: 'Sita',
-    timeZone: TZ,
-    role: 'care_recipient',
-    blurb: 'Receives care and manages her own routine.',
-  },
-  {
-    id: 'demo-tom',
-    email: 'tom@demo.carecircle',
-    displayName: 'Ram',
-    timeZone: TZ,
-    role: 'caregiver',
-    blurb: 'Visiting carer on weekday mornings.',
-  },
-  {
-    id: 'demo-leo',
-    email: 'leo@demo.carecircle',
-    displayName: 'Hari',
-    timeZone: TZ,
-    role: 'family',
-    blurb: 'Grandson. Helps with lunch and the bins.',
-  },
-  {
-    id: 'demo-sam',
-    email: 'sam@demo.carecircle',
-    displayName: 'Bina',
-    timeZone: TZ,
-    role: 'read_only',
-    blurb: 'Neighbour. Keeps an eye on the schedule.',
-  },
-];
+/** The names a visitor chooses when they start the walkthrough. */
+export interface SeedNames {
+  /** The person the circle is for (receives care). */
+  recipientName: string;
+  /** The visitor, who runs the circle as its admin. */
+  yourName: string;
+  circleName: string;
+  timeZone: string;
+}
+
+export const DEFAULT_SEED_NAMES: SeedNames = {
+  recipientName: 'Sita',
+  yourName: 'Gita',
+  circleName: 'Sita’s circle',
+  timeZone: DEFAULT_TZ,
+};
+
+/** "Mum" → "Mum’s circle". */
+export function suggestedCircleName(recipientName: string): string {
+  const name = recipientName.trim();
+  return name ? `${name}’s circle` : '';
+}
+
+/** The sample circle. The admin and the person receiving care are named by the visitor. */
+export function demoPeople(names: SeedNames = DEFAULT_SEED_NAMES): (DemoUser & { role: Role })[] {
+  const tz = names.timeZone;
+  return [
+    {
+      id: 'demo-priya',
+      email: 'priya@demo.carecircle',
+      displayName: names.yourName,
+      timeZone: tz,
+      role: 'admin',
+      blurb: 'That’s you. You set up and run the circle.',
+    },
+    {
+      id: 'demo-margaret',
+      email: 'margaret@demo.carecircle',
+      displayName: names.recipientName,
+      timeZone: tz,
+      role: 'care_recipient',
+      blurb: 'Receives care and can manage their own routine.',
+    },
+    {
+      id: 'demo-tom',
+      email: 'tom@demo.carecircle',
+      displayName: 'Ram',
+      timeZone: tz,
+      role: 'caregiver',
+      blurb: 'A sample carer who visits on weekday mornings.',
+    },
+    {
+      id: 'demo-leo',
+      email: 'leo@demo.carecircle',
+      displayName: 'Hari',
+      timeZone: tz,
+      role: 'family',
+      blurb: 'A sample family member who helps with lunch and the bins.',
+    },
+    {
+      id: 'demo-sam',
+      email: 'sam@demo.carecircle',
+      displayName: 'Bina',
+      timeZone: tz,
+      role: 'read_only',
+      blurb: 'A sample neighbour who can only view the schedule.',
+    },
+  ];
+}
+
+export const DEMO_PEOPLE = demoPeople();
 
 /** Small deterministic random generator so a reset always produces the same history. */
 function rng(seed: number) {
@@ -75,7 +104,11 @@ interface TaskSeed {
   reminder?: number | null;
 }
 
-export function buildSeed(now: Date): DemoDb {
+export function buildSeed(now: Date, names: SeedNames = DEFAULT_SEED_NAMES): DemoDb {
+  const TZ = names.timeZone;
+  const people = demoPeople(names);
+  const R = names.recipientName;
+  const Y = names.yourName;
   const today = localDate(now, TZ);
   const weekAgo = addDays(today, -7);
   const createdAt = new Date(now.getTime() - 8 * 86_400_000).toISOString();
@@ -83,19 +116,19 @@ export function buildSeed(now: Date): DemoDb {
 
   const db: DemoDb = {
     schema: 3,
-    users: DEMO_PEOPLE.map(({ role: _role, ...u }) => u),
+    users: people.map(({ role: _role, ...u }) => u),
     sessionUserId: null,
     circles: [
       {
         id: 'demo-circle',
-        name: 'Sita’s circle',
+        name: names.circleName,
         timeZone: TZ,
         familyCanSeeMedication: false,
         createdAt,
         version: 1,
       },
     ],
-    members: DEMO_PEOPLE.map((p, i) => ({
+    members: people.map((p, i) => ({
       circleId: 'demo-circle',
       userId: p.id,
       role: p.role,
@@ -104,7 +137,7 @@ export function buildSeed(now: Date): DemoDb {
     careProfiles: [
       {
         circleId: 'demo-circle',
-        preferredName: 'Sita',
+        preferredName: R,
         sharedNotes: 'Prefers tea to coffee. Hard of hearing on the left side, so ring the bell twice.',
         version: 1,
       },
@@ -123,7 +156,7 @@ export function buildSeed(now: Date): DemoDb {
       { circleId: 'demo-circle', userId: 'demo-priya' },
       { circleId: 'demo-circle', userId: 'demo-tom' },
     ],
-    prefs: DEMO_PEOPLE.map((p) => ({
+    prefs: people.map((p) => ({
       userId: p.id,
       quietStart: p.id === 'demo-priya' ? '22:00' : null,
       quietEnd: p.id === 'demo-priya' ? '07:00' : null,
@@ -133,7 +166,7 @@ export function buildSeed(now: Date): DemoDb {
     })),
   };
 
-  for (const p of DEMO_PEOPLE) {
+  for (const p of people) {
     const joined = db.members.find((m) => m.userId === p.id)!.joinedAt;
     log(
       db,
@@ -257,7 +290,7 @@ export function buildSeed(now: Date): DemoDb {
     db.tasks.push(task);
     if (s.medication) db.medication[id] = s.medication;
     if (s.appointment) db.appointments[id] = s.appointment;
-    log(db, 'demo-circle', 'demo-priya', 'task_created', `Gita added “${s.title}”`, id, new Date(createdAt));
+    log(db, 'demo-circle', 'demo-priya', 'task_created', `${Y} added “${s.title}”`, id, new Date(createdAt));
     generateOccurrences(db, task, task.startDate, addDays(today, 14), null);
   }
 
@@ -279,7 +312,7 @@ export function buildSeed(now: Date): DemoDb {
     const roll = random();
     if (task.title === 'Morning tablets' && o.occurrenceDate === addDays(today, -3)) {
       outcome = 'not_taken';
-      note = 'Sita felt unwell and didn’t want breakfast. Will try again tomorrow.';
+      note = `${R} felt unwell and didn’t want breakfast. Will try again tomorrow.`;
     } else if (task.category === 'hydration' && roll < 0.15) {
       outcome = 'skipped';
       note = 'Had a cup of tea instead.';
@@ -337,7 +370,7 @@ export function buildSeed(now: Date): DemoDb {
 
   const physio = update(
     'demo-priya',
-    'Physio is booked for this week. I’ll drive Sita there and back. Ram, no need to do the walk that day.',
+    `Physio is booked for this week. I’ll drive ${R} there and back. Ram, no need to do the walk that day.`,
     30,
   );
   db.acks.push({
@@ -357,7 +390,7 @@ export function buildSeed(now: Date): DemoDb {
   );
   update(
     'demo-tom',
-    'Sita enjoyed her walk to the park today and ate a full lunch. She asked about the photo album.',
+    `${R} enjoyed the walk to the park today and ate a full lunch. Asked about the photo album too.`,
     6,
   );
   update('demo-leo', 'Bring the photo album next time I visit.', 4, 'private');

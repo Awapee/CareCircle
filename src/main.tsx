@@ -1,42 +1,24 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { createBrowserRouter, createMemoryRouter } from 'react-router';
-import { RouterProvider } from 'react-router/dom';
-import { createQueryClient } from '@/api/ApiProvider';
-import { createApi } from '@/api/createApi';
-import { AppProviders } from '@/app/AppProviders';
-import { routes } from '@/app/routes';
+import { Root } from '@/app/Root';
+import { MEMORY_ROUTER } from '@/app/worlds';
 import { applyDisplayPrefs } from '@/lib/displayPrefs';
 import { captureInstallPrompt, registerServiceWorker } from '@/lib/pwa';
 import '@/styles/index.css';
 
-// VITE_MEMORY_ROUTER=true builds a copy that runs from a single file with no server-side
-// routing (e.g. an embedded preview), so routes live in memory instead of the address bar.
-const router =
-  import.meta.env.VITE_MEMORY_ROUTER === 'true'
-    ? createMemoryRouter(routes)
-    : createBrowserRouter(routes, {
-        basename: import.meta.env.BASE_URL.replace(/\/$/, '') || '/',
-      });
-
 applyDisplayPrefs();
 
 // A single-file preview can't install or work offline, so only the real site registers these.
-if (import.meta.env.VITE_MEMORY_ROUTER !== 'true') {
+if (!MEMORY_ROUTER) {
   captureInstallPrompt();
   registerServiceWorker();
 }
-
-const api = createApi();
-const queryClient = createQueryClient();
 
 const rootElement = document.getElementById('root');
 if (!rootElement) throw new Error('Root element #root not found in index.html');
 
 createRoot(rootElement).render(
   <StrictMode>
-    <AppProviders api={api} queryClient={queryClient}>
-      <RouterProvider router={router} />
-    </AppProviders>
+    <Root />
   </StrictMode>,
 );

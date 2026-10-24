@@ -26,9 +26,14 @@ Student project, built in milestones. See [`docs/PROGRESS.md`](docs/PROGRESS.md)
 | Profile & settings, data export & deletion            | ✅ Milestone 8 |
 | Hardening, installable app, deployment guide          | ✅ Milestone 9 |
 
-Without Supabase configured, the app runs in **demo mode**: a fictional care circle stored only in your browser, with a
-permanent "Demo mode, simulated" banner. That's how the public GitHub Pages site runs. To use real accounts, follow
-[`supabase/README.md`](supabase/README.md), then [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
+The site has two separate parts:
+
+- **The website and real accounts** (Supabase). Until a Supabase project is connected, sign-up says accounts are
+  almost ready. To switch them on, follow [`supabase/README.md`](supabase/README.md), then
+  [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
+- **The guided walkthrough** at `/demo`. Visitors name a sample circle (for anyone: a parent, partner or friend), then
+  a step-by-step guide shows each part of the working app. Its data stays in the browser and never mixes with real
+  accounts.
 
 ## Tech stack
 
@@ -51,7 +56,7 @@ npm run dev          # start the development server, then open the URL it prints
 
 ### Environment variables
 
-Not needed for demo mode. For real accounts, copy `.env.example` to `.env.local`, fill in your Supabase project URL and
+Not needed for the walkthrough. For real accounts, copy `.env.example` to `.env.local`, fill in your Supabase project URL and
 **anon** key, and set `VITE_DEMO_MODE=false`. Never commit `.env.local`, and never put the Supabase `service_role` key
 in frontend code. See [`supabase/README.md`](supabase/README.md).
 

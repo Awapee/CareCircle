@@ -1,7 +1,8 @@
 # Deployment guide
 
 CareCircle is a static site: one build (`npm run build`) produces a `dist/` folder that any static host can serve.
-The backend is either the built-in demo (nothing to deploy) or a Supabase project.
+Real accounts use a Supabase project. The guided walkthrough at `/demo` always uses the built-in demo backend
+(sample data in the visitor's browser), so it works with or without Supabase and never touches real accounts.
 
 ## GitHub Pages (how the public site runs)
 
@@ -19,7 +20,7 @@ How it works:
 - To deploy a fork or a renamed repository, change `BASE_PATH` to `/<repository-name>/`. For a custom domain or a
   `<user>.github.io` repository, use `/`.
 
-## Switching from demo mode to real accounts
+## Switching on real accounts
 
 1. Set up a Supabase project by following [`supabase/README.md`](../supabase/README.md) (migrations `0001`–`0005`, in
    order).
@@ -36,10 +37,11 @@ How it works:
 3. In Supabase → **Authentication → URL Configuration**, set the **Site URL** to the deployed address and add it to
    **Redirect URLs** (for example `https://<user>.github.io/CareCircle/**`), so password-reset and confirmation emails
    link back to the site.
-4. Re-run the deploy (Actions → Deploy to GitHub Pages → **Run workflow**). The demo banner disappears and the
-   sign-in page offers real sign-up.
+4. Re-run the deploy (Actions → Deploy to GitHub Pages → **Run workflow**). **Get started** and **Create an account**
+   then offer real sign-up. The walkthrough at `/demo` keeps working as before.
 
-To go back to the demo, set `VITE_DEMO_MODE` to `true` and re-run the deploy.
+Until these are set, the sign-in and sign-up pages say accounts are almost ready and point to the walkthrough. To
+switch accounts off again, set `VITE_DEMO_MODE` to `true` and re-run the deploy.
 
 ## Other static hosts (Netlify, Vercel, Cloudflare Pages)
 
@@ -68,5 +70,5 @@ npm run check      # formatting, types, lint, unit + database tests, build
 npm run test:e2e   # browser tests: accessibility, layout, journeys, offline
 ```
 
-After deploying, open the site, choose **Open the demo** (or sign in), and load a deep link such as `/app/settings`
-directly.
+After deploying, open the site, choose **Start the walkthrough** (or sign in), and load a deep link such as
+`/demo/app/settings` directly.

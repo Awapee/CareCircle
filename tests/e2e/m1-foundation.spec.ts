@@ -11,6 +11,7 @@ const pages = [
   '/terms',
   '/limitations',
   '/sign-in',
+  '/demo/',
   '/does-not-exist',
 ];
 
@@ -29,7 +30,7 @@ test.describe('responsive layout', () => {
   for (const width of [320, 375, 768, 1024, 1440, 1920]) {
     test(`no horizontal overflow at ${width}px`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 });
-      for (const path of ['/', '/get-started', '/privacy', '/sign-in']) {
+      for (const path of ['/', '/get-started', '/privacy', '/sign-in', '/demo/']) {
         await page.goto(path);
         await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
         await expectNoHorizontalOverflow(page);

@@ -1,6 +1,7 @@
 # Connecting CareCircle to Supabase
 
-Without these steps the app runs in demo mode. With them, people can create real accounts and share real circles.
+Without these steps nobody can sign up (the site says accounts are almost ready, and the walkthrough at `/demo` still
+works). With them, people can create real accounts and share real circles.
 
 ## 1. Create a project
 

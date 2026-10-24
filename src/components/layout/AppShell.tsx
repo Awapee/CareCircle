@@ -1,16 +1,19 @@
-import { Bell, LogOut, Menu, RotateCcw, UserRound, WifiOff } from 'lucide-react';
+import { Bell, Compass, LogOut, Menu, RotateCcw, WifiOff } from 'lucide-react';
 import { useState } from 'react';
-import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router';
+import { Link, NavLink, Outlet, useNavigate } from 'react-router';
 import { useApi, useEndSession } from '@/api/ApiProvider';
 import { isDemo } from '@/api/createApi';
 import { useNotifications } from '@/api/queries';
 import { appNavItems } from '@/app/navigation';
 import { useCircle } from '@/app/session';
 import { Logo } from '@/components/brand/Logo';
+import { WorldLink } from '@/components/nav/WorldLink';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import { Sheet } from '@/components/ui/Sheet';
 import { ROLE_LABELS } from '@/domain/types';
+import { DemoGuide } from '@/features/demo/DemoGuide';
+import { guideStore, useGuide } from '@/features/demo/guideStore';
 import { cn } from '@/lib/cn';
 import { useOnline } from '@/lib/pwa';
 import { useScrollToHash } from '@/lib/useScrollToHash';
@@ -25,6 +28,10 @@ export function AppShell() {
   const [menuOpen, setMenuOpen] = useState(false);
   useScrollToHash();
   const unread = useUnreadCount();
+  // Leave room at the bottom so the walkthrough guide never hides the end of a page.
+  const api = useApi();
+  const guide = useGuide();
+  const guideOpen = isDemo(api) && guide.open;
 
   return (
     <div className="min-h-dvh bg-surface">
@@ -87,7 +94,14 @@ export function AppShell() {
             </div>
           </header>
 
-          <main id="main" tabIndex={-1} className="px-4 pb-28 pt-6 outline-none sm:px-6 lg:px-10 lg:pb-12 lg:pt-10">
+          <main
+            id="main"
+            tabIndex={-1}
+            className={cn(
+              'px-4 pb-28 pt-6 outline-none sm:px-6 lg:px-10 lg:pb-12 lg:pt-10',
+              guideOpen && 'pb-[23rem] lg:pb-80',
+            )}
+          >
             <div className="mx-auto max-w-6xl">
               <Outlet />
             </div>
@@ -96,6 +110,7 @@ export function AppShell() {
       </div>
 
       <BottomNav />
+      <DemoGuide />
     </div>
   );
 }
@@ -184,6 +199,25 @@ function SidebarFooter({ onNavigate }: { onNavigate?: () => void }) {
   const api = useApi();
   const endSession = useEndSession();
   const [busy, setBusy] = useState(false);
+  const linkClass = 'block rounded-lg px-3 py-2 text-ink-muted hover:bg-surface hover:text-ink';
+
+  // The walkthrough is its own section: its links lead back to the website.
+  if (isDemo(api)) {
+    return (
+      <div className="space-y-1 px-3 py-4 text-sm lg:border-t lg:border-line">
+        <WorldLink world="main" to="/limitations" className={linkClass}>
+          Appropriate use
+        </WorldLink>
+        <WorldLink world="main" to="/" className={linkClass}>
+          Back to website
+        </WorldLink>
+        <WorldLink world="main" to="/get-started" className={cn(linkClass, 'font-semibold text-brand-700')}>
+          Create an account
+        </WorldLink>
+      </div>
+    );
+  }
+
   const signOut = async () => {
     setBusy(true);
     onNavigate?.();
@@ -191,18 +225,10 @@ function SidebarFooter({ onNavigate }: { onNavigate?: () => void }) {
   };
   return (
     <div className="space-y-1 px-3 py-4 text-sm lg:border-t lg:border-line">
-      <Link
-        to="/limitations"
-        onClick={onNavigate}
-        className="block rounded-lg px-3 py-2 text-ink-muted hover:bg-surface hover:text-ink"
-      >
+      <Link to="/limitations" onClick={onNavigate} className={linkClass}>
         Appropriate use
       </Link>
-      <Link
-        to="/"
-        onClick={onNavigate}
-        className="block rounded-lg px-3 py-2 text-ink-muted hover:bg-surface hover:text-ink"
-      >
+      <Link to="/" onClick={onNavigate} className={linkClass}>
         Back to website
       </Link>
       <button
@@ -212,7 +238,7 @@ function SidebarFooter({ onNavigate }: { onNavigate?: () => void }) {
         className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-ink-muted hover:bg-surface hover:text-ink"
       >
         <LogOut className="size-4" aria-hidden="true" />
-        {api.mode === 'demo' ? 'Leave demo' : 'Sign out'}
+        Sign out
       </button>
     </div>
   );
@@ -256,7 +282,6 @@ function BottomNav() {
   );
 }
 
-/** Demo mode is impossible to miss: fictional data, stored only in this browser. */
 /** Real accounts need a connection to save; the demo keeps working offline because it lives in the browser. */
 function OfflineBanner() {
   const api = useApi();
@@ -275,61 +300,78 @@ function OfflineBanner() {
   );
 }
 
+/** The walkthrough is impossible to miss: sample data, stored only in this browser. */
 function ModeBanner() {
   const api = useApi();
-  const { members, userId, myRole } = useCircle();
+  const { members, userId } = useCircle();
   const navigate = useNavigate();
-  const location = useLocation();
+  const { open: guideOpen } = useGuide();
   const [confirmReset, setConfirmReset] = useState(false);
   const [resetting, setResetting] = useState(false);
   if (!isDemo(api)) return null;
-  const me = members.find((m) => m.userId === userId);
 
   const reset = async () => {
     setResetting(true);
     await api.reset();
+    guideStore.set({ step: 0, open: true });
     setResetting(false);
     setConfirmReset(false);
-    navigate('/sign-in', { replace: true });
+    navigate('/', { replace: true });
   };
 
   return (
     <div role="note" className="bg-accent-100 px-4 py-2 text-sm text-accent-800">
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-1">
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <p>
-          <strong className="font-semibold">Demo mode, simulated.</strong> Fictional data, stored only in this browser.
-          Viewing as {me?.displayName ?? 'you'} ({ROLE_LABELS[myRole]}).
+          <strong className="font-semibold">Walkthrough.</strong> Sample data, saved only in this browser.
         </p>
-        <div className="flex items-center gap-1">
-          <Link
-            to={`/sign-in?next=${encodeURIComponent(location.pathname)}`}
-            className="inline-flex min-h-9 items-center gap-1.5 rounded-lg px-2 font-semibold underline-offset-2 hover:underline"
-          >
-            <UserRound className="size-4" aria-hidden="true" />
-            Switch person
-          </Link>
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <label className="inline-flex min-h-9 items-center gap-2 font-semibold">
+            View as
+            <select
+              value={userId}
+              onChange={(e) => void api.switchPersona(e.target.value)}
+              className="min-h-9 rounded-lg border border-accent-800/30 bg-canvas px-2 font-normal text-ink"
+            >
+              {members.map((m) => (
+                <option key={m.userId} value={m.userId}>
+                  {m.displayName} ({ROLE_LABELS[m.role]})
+                </option>
+              ))}
+            </select>
+          </label>
+          {!guideOpen && (
+            <button
+              type="button"
+              onClick={() => guideStore.set({ open: true })}
+              className="inline-flex min-h-9 items-center gap-1.5 rounded-lg px-2 font-semibold underline-offset-2 hover:underline"
+            >
+              <Compass className="size-4" aria-hidden="true" />
+              Guide
+            </button>
+          )}
           <button
             type="button"
             onClick={() => setConfirmReset(true)}
             className="inline-flex min-h-9 items-center gap-1.5 rounded-lg px-2 font-semibold underline-offset-2 hover:underline"
           >
             <RotateCcw className="size-4" aria-hidden="true" />
-            Reset demo
+            Start over
           </button>
         </div>
       </div>
       <Dialog
         open={confirmReset}
         onOpenChange={setConfirmReset}
-        title="Reset the demo?"
-        description="Everything you changed in the demo is replaced with the original fictional data."
+        title="Start the walkthrough over?"
+        description="Your sample circle and any changes you made are cleared, and you can name a new one."
         footer={
           <>
             <Button variant="secondary" onClick={() => setConfirmReset(false)}>
-              Keep my changes
+              Keep my circle
             </Button>
             <Button variant="danger" loading={resetting} onClick={reset}>
-              Reset demo
+              Start over
             </Button>
           </>
         }

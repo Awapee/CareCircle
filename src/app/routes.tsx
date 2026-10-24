@@ -1,6 +1,7 @@
 import type { RouteObject } from 'react-router';
 import { RequireSession, CircleGate } from '@/app/session';
 import { AppShell } from '@/components/layout/AppShell';
+import { LeaveForWorld } from '@/components/nav/WorldLink';
 import { PublicLayout } from '@/components/layout/PublicLayout';
 import { ActivityPage } from '@/pages/app/ActivityPage';
 import { AppointmentsPage } from '@/pages/app/AppointmentsPage';
@@ -14,6 +15,8 @@ import { SettingsPage } from '@/pages/app/SettingsPage';
 import { InvitePage } from '@/pages/auth/InvitePage';
 import { SignInPage, SignUpPage } from '@/pages/auth/SignInPage';
 import { WelcomePage } from '@/pages/auth/WelcomePage';
+import { DemoLayout } from '@/pages/demo/DemoLayout';
+import { DemoStartPage } from '@/pages/demo/DemoStartPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { AboutPage } from '@/pages/public/AboutPage';
 import { ContactPage } from '@/pages/public/ContactPage';
@@ -23,26 +26,10 @@ import { LimitationsPage } from '@/pages/public/LimitationsPage';
 import { PrivacyPage } from '@/pages/public/PrivacyPage';
 import { TermsPage } from '@/pages/public/TermsPage';
 import { RouteErrorPage } from '@/pages/RouteErrorPage';
+import { DEMO_PREFIX } from './worlds';
 
-/** Route table. Kept separate from the router instance so tests can mount it in a memory router. */
-export const routes: RouteObject[] = [
-  {
-    element: <PublicLayout />,
-    errorElement: <RouteErrorPage />,
-    children: [
-      { index: true, element: <LandingPage /> },
-      { path: 'get-started', element: <GetStartedPage /> },
-      { path: 'about', element: <AboutPage /> },
-      { path: 'contact', element: <ContactPage /> },
-      { path: 'privacy', element: <PrivacyPage /> },
-      { path: 'terms', element: <TermsPage /> },
-      { path: 'limitations', element: <LimitationsPage /> },
-      { path: 'sign-in', element: <SignInPage /> },
-      { path: 'sign-up', element: <SignUpPage /> },
-      { path: 'invite/:token', element: <InvitePage /> },
-      { path: '*', element: <NotFoundPage /> },
-    ],
-  },
+/** The signed-in part of the app. Shared by the website (real accounts) and the walkthrough. */
+const appRoutes: RouteObject[] = [
   {
     path: 'welcome',
     errorElement: <RouteErrorPage />,
@@ -75,4 +62,46 @@ export const routes: RouteObject[] = [
       { path: '*', element: <NotFoundPage /> },
     ],
   },
+];
+
+/** Route table for the website. Kept separate from the router instance so tests can mount it in a memory router. */
+export const routes: RouteObject[] = [
+  {
+    element: <PublicLayout />,
+    errorElement: <RouteErrorPage />,
+    children: [
+      { index: true, element: <LandingPage /> },
+      { path: 'get-started', element: <GetStartedPage /> },
+      { path: 'about', element: <AboutPage /> },
+      { path: 'contact', element: <ContactPage /> },
+      { path: 'privacy', element: <PrivacyPage /> },
+      { path: 'terms', element: <TermsPage /> },
+      { path: 'limitations', element: <LimitationsPage /> },
+      { path: 'sign-in', element: <SignInPage /> },
+      { path: 'sign-up', element: <SignUpPage /> },
+      { path: 'invite/:token', element: <InvitePage /> },
+      // The walkthrough runs as its own app (separate data); hand over to it.
+      { path: 'demo', element: <LeaveForWorld world="demo" stripPrefix={DEMO_PREFIX} /> },
+      { path: 'demo/*', element: <LeaveForWorld world="demo" stripPrefix={DEMO_PREFIX} /> },
+      { path: '*', element: <NotFoundPage /> },
+    ],
+  },
+  ...appRoutes,
+];
+
+/**
+ * Route table for the walkthrough, served under `/demo`. Anything that isn't the start page or
+ * the app (website pages such as About or Privacy) is handed back to the website.
+ */
+export const demoRoutes: RouteObject[] = [
+  {
+    element: <DemoLayout />,
+    errorElement: <RouteErrorPage />,
+    children: [
+      { index: true, element: <DemoStartPage /> },
+      { path: 'sign-in', element: <DemoStartPage /> },
+    ],
+  },
+  ...appRoutes,
+  { path: '*', element: <LeaveForWorld world="main" /> },
 ];

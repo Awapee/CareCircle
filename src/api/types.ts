@@ -16,11 +16,12 @@ import type {
 import type { CareUpdateInput, CircleInput, InvitationInput, TaskInput } from '@/domain/validation';
 
 /**
- * The one data interface every page uses (docs/ARCHITECTURE.md §1). Two implementations:
- * `SupabaseApi` (real accounts, access enforced by RLS) and `DemoApi` (fictional data in this browser).
+ * The one data interface every page uses (docs/ARCHITECTURE.md §1). Implementations:
+ * `SupabaseApi` (real accounts, access enforced by RLS), `DemoApi` (fictional data in this browser)
+ * and `UnavailableApi` (the main site before a Supabase project is connected: nobody can sign in).
  */
 
-export type BackendMode = 'demo' | 'supabase';
+export type BackendMode = 'demo' | 'supabase' | 'unavailable';
 
 export interface Session {
   userId: string;

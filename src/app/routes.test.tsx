@@ -1,6 +1,7 @@
 import { screen, within } from '@testing-library/react';
 import { matchRoutes } from 'react-router';
 import { describe, expect, it } from 'vitest';
+import { createUnavailableApi } from '@/api/unavailable/UnavailableApi';
 import { demoApi, renderRoute } from '@/test/renderRoute';
 import { routes } from './routes';
 
@@ -64,10 +65,25 @@ describe('public pages', () => {
   });
 });
 
+describe('accounts before the database is connected', () => {
+  it('get started offers the walkthrough and says accounts are coming soon', async () => {
+    renderRoute('/get-started', createUnavailableApi());
+    await screen.findByRole('heading', { level: 1, name: /get started/i });
+    expect(screen.getByRole('link', { name: /start the walkthrough/i })).toHaveAttribute('href', '/demo/');
+    expect(screen.getByText(/coming soon/i)).toBeInTheDocument();
+  });
+
+  it('sign-up explains that accounts are almost ready instead of pretending', async () => {
+    renderRoute('/sign-up', createUnavailableApi());
+    expect(await screen.findByText(/accounts are almost ready/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /see how it works/i })).toHaveAttribute('href', '/demo/');
+  });
+});
+
 describe('app shell', () => {
-  it('sends signed-out visitors to sign in', async () => {
+  it('sends signed-out walkthrough visitors to name a circle first', async () => {
     renderRoute('/app/planner');
-    expect(await screen.findByRole('heading', { level: 1, name: /try the carecircle demo/i })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: /see how carecircle works/i })).toBeInTheDocument();
   });
 
   it('marks the current page in the navigation', async () => {
@@ -77,9 +93,9 @@ describe('app shell', () => {
     expect(within(nav).getByRole('link', { name: 'Planner' })).toHaveAttribute('aria-current', 'page');
   });
 
-  it('shows the demo-mode banner on every app page', async () => {
+  it('shows the walkthrough banner on every app page', async () => {
     renderRoute('/app', demoApi());
-    expect(await screen.findByText(/demo mode, simulated/i)).toBeInTheDocument();
+    expect(await screen.findByText(/sample data, saved only in this browser/i)).toBeInTheDocument();
   });
 
   it('every navigation item resolves to a real page', () => {

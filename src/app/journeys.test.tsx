@@ -3,29 +3,50 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { DemoApi } from '@/api/demo/DemoApi';
 import { buildSeed } from '@/api/demo/seed';
+import { guideStore } from '@/features/demo/guideStore';
 import { demoApi, renderRoute } from '@/test/renderRoute';
 
 /** End-to-end journeys through the real pages, using the demo backend. */
 
-describe('signing in to the demo', () => {
-  it('lets a visitor choose a person and lands on their dashboard', async () => {
+describe('the guided walkthrough', () => {
+  it('builds a circle with the visitor’s own names and starts the tour', async () => {
     const user = userEvent.setup();
     renderRoute('/sign-in', demoApi(null));
-    await user.click(await screen.findByRole('button', { name: /continue as gita/i }));
-    expect(await screen.findByRole('heading', { level: 1, name: /gita/i })).toBeInTheDocument();
-    expect(screen.getByText(/scheduled today/i)).toBeInTheDocument();
+    await user.type(await screen.findByLabelText(/who is the circle for/i), 'Mum');
+    await user.type(screen.getByLabelText(/your name/i), 'Alex');
+    await user.click(screen.getByRole('button', { name: /start the walkthrough/i }));
+    expect(await screen.findByRole('heading', { level: 1, name: /alex/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /one place for the whole day/i })).toBeInTheDocument();
+    expect(screen.getAllByText(/mum’s circle/i).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/sita/i)).not.toBeInTheDocument();
   });
 
-  it('takes a brand-new account through creating a circle', async () => {
+  it('asks for both names before starting', async () => {
     const user = userEvent.setup();
     renderRoute('/sign-in', demoApi(null));
-    await user.type(await screen.findByLabelText(/your first name/i), 'Alex');
-    await user.click(screen.getByRole('button', { name: /start fresh/i }));
-    expect(await screen.findByRole('heading', { name: /welcome, alex/i })).toBeInTheDocument();
-    await user.type(screen.getByLabelText(/who is receiving care/i), 'Jo');
-    await user.click(screen.getByRole('button', { name: /create circle/i }));
-    expect(await screen.findByRole('heading', { level: 1, name: /alex/i })).toBeInTheDocument();
-    expect(screen.getByText(/care for jo/i)).toBeInTheDocument();
+    await user.click(await screen.findByRole('button', { name: /start the walkthrough/i }));
+    expect(await screen.findByText(/enter a name for the person you care for/i)).toBeInTheDocument();
+    expect(screen.getByText('Enter your name')).toBeInTheDocument();
+  });
+
+  it('moves through the tour to the next page', async () => {
+    const user = userEvent.setup();
+    const api = demoApi(null);
+    await api.startWalkthrough({ recipientName: 'Dad', yourName: 'Sam', circleName: 'Dad’s team', timeZone: 'UTC' });
+    guideStore.set({ step: 0, open: true });
+    renderRoute('/app', api);
+    await screen.findByRole('heading', { name: /one place for the whole day/i });
+    await user.click(screen.getByRole('button', { name: /next step/i }));
+    expect(await screen.findByRole('heading', { level: 1, name: 'Planner' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /plan the week/i })).toBeInTheDocument();
+  });
+
+  it('lets the visitor view the circle as someone else', async () => {
+    const user = userEvent.setup();
+    renderRoute('/app', demoApi('demo-priya'));
+    const select = await screen.findByLabelText(/view as/i);
+    await user.selectOptions(select, 'demo-sam');
+    await waitFor(() => expect(screen.getByLabelText(/view as/i)).toHaveValue('demo-sam'));
   });
 });
 
@@ -129,7 +150,8 @@ describe('updates and notifications', () => {
 
   it('lists notifications and marks them all as read', async () => {
     const user = userEvent.setup();
-    renderRoute('/app/notifications', demoApi('demo-priya'));
+    // A fixed midday clock, so there are always reminders to read whatever time the test runs.
+    renderRoute('/app/notifications', demoApi('demo-priya', new Date('2026-03-10T12:00:00Z')));
     await user.click(await screen.findByRole('button', { name: /mark all as read/i }));
     expect(await screen.findByRole('heading', { name: /all caught up/i })).toBeInTheDocument();
   });
@@ -202,11 +224,10 @@ describe('settings', () => {
   });
 });
 
-describe('signing out', () => {
-  it('returns to the home page, not the sign-in page', async () => {
-    const user = userEvent.setup();
+describe('leaving the walkthrough', () => {
+  it('links back to the website and to creating an account', async () => {
     renderRoute('/app', demoApi('demo-tom'));
-    await user.click((await screen.findAllByRole('button', { name: /leave demo/i }))[0]!);
-    expect(await screen.findByRole('heading', { name: /everyday care, made easier together/i })).toBeInTheDocument();
+    expect((await screen.findAllByRole('link', { name: /back to website/i }))[0]).toHaveAttribute('href', '/');
+    expect(screen.getAllByRole('link', { name: /create an account/i })[0]).toHaveAttribute('href', '/get-started');
   });
 });
