@@ -18,6 +18,39 @@ export function AboutPage() {
         appointments, with a clear record of what has been done and by whom.
       </p>
 
+      <h2>Why we’re different</h2>
+      <p>
+        Your phone can already remind you to do something. But a reminder only reaches one person, on one phone, and it
+        disappears once it’s swiped away. Care involves several people, and what matters is whether it actually
+        happened. That’s the gap CareCircle fills.
+      </p>
+      <ul>
+        <li>
+          <strong>Made for a group, not one phone.</strong> Everyone in the circle works from the same plan. When one
+          person changes a time or takes on a task, everyone else sees it straight away.
+        </li>
+        <li>
+          <strong>It records what happened.</strong> Each task is marked as done, taken, not taken or skipped, with who
+          did it and when. Nobody has to call round asking “did Mum have her tablets?”
+        </li>
+        <li>
+          <strong>It notices when something is missed.</strong> If nothing is recorded, the right people get a gentle
+          follow-up so it doesn’t quietly slip through. A phone alarm can’t tell whether anyone acted on it.
+        </li>
+        <li>
+          <strong>Each person sees what they should.</strong> A carer, a grandchild and a neighbour have different
+          roles. Medication details stay private unless the circle chooses to share them.
+        </li>
+        <li>
+          <strong>Updates stay with the care.</strong> Notes after a visit sit alongside the day’s plan, and others
+          acknowledge them, so you know they were read. Nothing gets lost in a busy group chat.
+        </li>
+        <li>
+          <strong>Built around the person receiving care.</strong> They can be part of their own circle, see who’s in
+          it, and manage their own routine where they’re able to.
+        </li>
+      </ul>
+
       <h2>What we believe</h2>
       <ul>
         <li>
@@ -43,9 +76,9 @@ export function AboutPage() {
 
       <h2>Project status</h2>
       <p>
-        CareCircle is currently a student project in active development. Demonstration content uses fictional people,
-        routines and medication names. Features that are simulated (such as notifications in demo mode) are labelled as
-        such inside the app.
+        CareCircle is currently a student project in active development. The guided walkthrough uses sample people,
+        routines and medication names, and anything simulated there (such as notifications) is labelled as such inside
+        the app.
       </p>
     </InfoPageLayout>
   );
