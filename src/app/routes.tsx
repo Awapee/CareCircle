@@ -17,6 +17,7 @@ import { SignInPage, SignUpPage } from '@/pages/auth/SignInPage';
 import { WelcomePage } from '@/pages/auth/WelcomePage';
 import { DemoLayout } from '@/pages/demo/DemoLayout';
 import { DemoStartPage } from '@/pages/demo/DemoStartPage';
+import { PresentPage } from '@/pages/demo/PresentPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { AboutPage } from '@/pages/public/AboutPage';
 import { ContactPage } from '@/pages/public/ContactPage';
@@ -102,6 +103,8 @@ export const demoRoutes: RouteObject[] = [
       { path: 'sign-in', element: <DemoStartPage /> },
     ],
   },
+  // Temporary: four-view presentation for the pitch video.
+  { path: 'present', errorElement: <RouteErrorPage />, element: <PresentPage /> },
   ...appRoutes,
   { path: '*', element: <LeaveForWorld world="main" /> },
 ];

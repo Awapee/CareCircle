@@ -1,6 +1,6 @@
-import { ArrowRight, CalendarDays, MessageSquareText, Pill, Users } from 'lucide-react';
+import { ArrowRight, CalendarDays, MessageSquareText, MonitorPlay, Pill, Users } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { useApi, useSession } from '@/api/ApiProvider';
 import { isDemo } from '@/api/createApi';
 import { suggestedCircleName } from '@/api/demo/seed';
@@ -91,6 +91,25 @@ export function DemoStartPage() {
           <p className="mt-8 text-sm text-ink-subtle">
             Takes about two minutes. The sample data stays in this browser and nothing is sent anywhere.
           </p>
+          {/* Temporary: four-view presentation for the pitch video. */}
+          <Link
+            to="/present"
+            className="mt-6 flex items-center gap-3 rounded-2xl border border-line bg-canvas p-4 hover:border-brand-300"
+          >
+            <span
+              className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent-100 text-accent-800"
+              aria-hidden="true"
+            >
+              <MonitorPlay className="size-5" />
+            </span>
+            <span className="flex-1">
+              <span className="block font-semibold">Presentation view</span>
+              <span className="block text-sm text-ink-muted">
+                One day in Mum’s circle, seen by Mum, her daughter, her carer and Dad.
+              </span>
+            </span>
+            <ArrowRight className="size-5 text-brand-700" aria-hidden="true" />
+          </Link>
         </div>
 
         <Card as="section" padding="lg" aria-labelledby="start-heading">
