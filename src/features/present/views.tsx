@@ -1,4 +1,15 @@
-import { CalendarClock, ClipboardList, DoorOpen, GlassWater, Heart, LifeBuoy, Pill, Plus, Smile } from 'lucide-react';
+import {
+  CalendarClock,
+  Check,
+  ClipboardList,
+  DoorOpen,
+  GlassWater,
+  Heart,
+  LifeBuoy,
+  Pill,
+  Plus,
+  Smile,
+} from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -108,7 +119,7 @@ function MumNow({ story }: { story: StoryState }) {
     {
       icon: <Smile className="size-5" />,
       label: 'Feeling',
-      value: story.mood ? `${MOODS[story.mood.value].emoji} ${MOODS[story.mood.value].label}` : 'Not checked in yet',
+      value: story.mood ? MOODS[story.mood.value].label : 'Not checked in yet',
       warn: story.mood ? MOODS[story.mood.value].worry : false,
     },
     {
@@ -156,6 +167,34 @@ function Handover({ story }: { story: StoryState }) {
 
 /* ------------------------------------------------------------------ Mum */
 
+/** Each feeling has its own colour: green, teal, amber, red. */
+const MOOD_STYLES: Record<Mood, { idle: string; active: string; dot: string; check: string }> = {
+  great: {
+    idle: 'border-success-700/30 bg-success-50 text-success-700 hover:border-success-700',
+    active: 'border-success-700 bg-success-700 text-white',
+    dot: 'bg-success-700',
+    check: 'text-success-700',
+  },
+  okay: {
+    idle: 'border-brand-300 bg-brand-50 text-brand-800 hover:border-brand-600',
+    active: 'border-brand-600 bg-brand-600 text-white',
+    dot: 'bg-brand-500',
+    check: 'text-brand-700',
+  },
+  low: {
+    idle: 'border-accent-400/60 bg-accent-50 text-accent-800 hover:border-accent-400',
+    active: 'border-accent-400 bg-accent-400 text-ink',
+    dot: 'bg-accent-400',
+    check: 'text-accent-800',
+  },
+  unwell: {
+    idle: 'border-danger-600/30 bg-danger-50 text-danger-700 hover:border-danger-600',
+    active: 'border-danger-600 bg-danger-600 text-white',
+    dot: 'bg-danger-600',
+    check: 'text-danger-700',
+  },
+};
+
 export function MumView({ story, dispatch, onCall, onMessage }: ViewProps) {
   const tasks = sortByTime(story.tasks);
   return (
@@ -173,12 +212,18 @@ export function MumView({ story, dispatch, onCall, onMessage }: ViewProps) {
                 aria-pressed={active}
                 onClick={() => dispatch({ type: 'mood', value: m })}
                 className={cn(
-                  'flex flex-col items-center gap-1 rounded-2xl border-2 bg-canvas px-3 py-4 text-lg font-medium',
-                  active ? 'border-brand-600 bg-brand-50' : 'border-line hover:border-brand-300',
+                  'flex min-h-28 flex-col items-center justify-center gap-2 rounded-2xl border-2 px-3 py-4 text-lg font-semibold transition-colors',
+                  active ? MOOD_STYLES[m].active : MOOD_STYLES[m].idle,
                 )}
               >
-                <span className="text-4xl" aria-hidden="true">
-                  {MOODS[m].emoji}
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    'flex size-9 items-center justify-center rounded-full',
+                    active ? 'bg-white/90' : MOOD_STYLES[m].dot,
+                  )}
+                >
+                  {active && <Check className={cn('size-5', MOOD_STYLES[m].check)} />}
                 </span>
                 {MOODS[m].label}
               </button>

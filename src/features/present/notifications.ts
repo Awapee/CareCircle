@@ -77,9 +77,9 @@ export function notificationsFor(viewer: PersonId, s: StoryState): StoryNotifica
         title: 'Good morning! How are you feeling?',
         body: 'Let your family know with one tap.',
         actions: [
-          { kind: 'mood', label: '😄 Great', value: 'great' },
-          { kind: 'mood', label: '🙂 Okay', value: 'okay' },
-          { kind: 'mood', label: '😕 Not great', value: 'low' },
+          { kind: 'mood', label: 'Great', value: 'great' },
+          { kind: 'mood', label: 'Okay', value: 'okay' },
+          { kind: 'mood', label: 'Not great', value: 'low' },
         ],
       });
     }
@@ -184,7 +184,7 @@ export function notificationsFor(viewer: PersonId, s: StoryState): StoryNotifica
       key: `mood-${s.mood.at}`,
       tone: 'alert',
       icon: 'heart',
-      title: `Mum is feeling ${MOODS[s.mood.value].label.toLowerCase()} today ${MOODS[s.mood.value].emoji}`,
+      title: `Mum is feeling ${MOODS[s.mood.value].label.toLowerCase()} today`,
       body: `She checked in at ${clock(s.mood.at)}. Maybe give her a call.`,
       actions: [
         { kind: 'call', label: 'Call Mum', to: 'mum' },

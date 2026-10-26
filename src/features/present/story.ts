@@ -72,11 +72,11 @@ export function contactName(person: PersonId, viewer: PersonId): string {
 export type Status = 'done' | 'taken' | 'not_taken' | null;
 export type Mood = 'great' | 'okay' | 'low' | 'unwell';
 
-export const MOODS: Record<Mood, { emoji: string; label: string; worry: boolean }> = {
-  great: { emoji: '😄', label: 'Feeling great', worry: false },
-  okay: { emoji: '🙂', label: 'Okay', worry: false },
-  low: { emoji: '😕', label: 'Not great', worry: true },
-  unwell: { emoji: '🤒', label: 'Unwell', worry: true },
+export const MOODS: Record<Mood, { label: string; worry: boolean }> = {
+  great: { label: 'Feeling great', worry: false },
+  okay: { label: 'Okay', worry: false },
+  low: { label: 'Not great', worry: true },
+  unwell: { label: 'Unwell', worry: true },
 };
 
 export interface Task {
@@ -393,7 +393,7 @@ export function storyReducer(s: StoryState, a: StoryAction): StoryState {
         ...s,
         minute,
         mood: { value: a.value, at: minute },
-        activity: log('mum', `checked in: ${MOODS[a.value].label.toLowerCase()} ${MOODS[a.value].emoji}`),
+        activity: log('mum', `checked in: ${MOODS[a.value].label.toLowerCase()}`),
       };
     case 'help':
       return { ...s, minute, help: { at: minute, responders: [] }, activity: log('mum', 'asked the circle for help') };
