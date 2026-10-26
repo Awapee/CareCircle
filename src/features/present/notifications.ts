@@ -95,9 +95,10 @@ export function notificationsFor(viewer: PersonId, s: StoryState): StoryNotifica
         actions: [{ kind: 'record', label: 'I’ve taken them', taskId: MORNING_TABLETS, status: 'taken' }],
       });
     }
-    if (s.water < WATER_GOAL) {
+    // A gentle nudge only while she's behind on her morning water.
+    if (s.water < 2) {
       out.push({
-        key: `water-${s.water}`,
+        key: 'mum-water',
         tone: 'reminder',
         icon: 'water',
         title: 'Time for a glass of water 💧',
@@ -139,7 +140,7 @@ export function notificationsFor(viewer: PersonId, s: StoryState): StoryNotifica
   // The carer: give the tablets.
   if (viewer === 'ram' && tablets.status === null) {
     out.push({
-      key: `ram-tablets-${s.visit.status}`,
+      key: 'ram-tablets',
       tone: 'reminder',
       icon: 'pill',
       title: 'Reminder: give Mum her morning tablets',

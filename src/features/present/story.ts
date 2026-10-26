@@ -217,7 +217,7 @@ export function initialStory(): StoryState {
         author: 'dad',
         text: 'Had an early cup of tea with Mum before work. She slept well.',
         at: 7 * 60 + 50,
-        seenBy: ['me'],
+        seenBy: ['me', 'mum', 'ram'],
       },
     ],
     messages: [
