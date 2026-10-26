@@ -4,7 +4,7 @@ import { Link } from 'react-router';
 import { Logo } from '@/components/brand/Logo';
 import { SkipLink } from '@/components/layout/SkipLink';
 import { notificationsFor, type NoteAction, type StoryNotification } from '@/features/present/notifications';
-import { Avatar, CallOverlay, NotificationBell, PopupStack } from '@/features/present/parts';
+import { Avatar, CallOverlay, MessageDialog, NotificationBell, PopupStack } from '@/features/present/parts';
 import { DadView, MeView, MumView, RamView } from '@/features/present/views';
 import {
   ORDER,
@@ -28,10 +28,13 @@ export function PresentPage() {
   usePageTitle('Presentation');
   const [story, rawDispatch] = useReducer(storyReducer, undefined, loadStory);
   const [viewer, setViewer] = useState<PersonId>('mum');
-  const [calling, setCalling] = useState(false);
+  const [calling, setCalling] = useState<PersonId | null>(null);
+  const [messaging, setMessaging] = useState<PersonId | null>(null);
   const [popups, setPopups] = useState<string[]>([]);
   const [replay, setReplay] = useState(0);
   const storyRef = useRef(story);
+  /** Pop-ups already shown on this tab, so each appears once. */
+  const shownRef = useRef(new Set<string>());
 
   useEffect(() => {
     storyRef.current = story;
@@ -45,6 +48,7 @@ export function PresentPage() {
     const keys = notificationsFor(viewer, storyRef.current)
       .slice(0, 2)
       .map((n) => n.key);
+    shownRef.current = new Set(keys);
     const timers = [
       window.setTimeout(() => setPopups([]), 0),
       ...keys.map((k, i) => window.setTimeout(() => setPopups((p) => [...p, k]), 1600 + i * 1500)),
@@ -55,17 +59,73 @@ export function PresentPage() {
   const notes = notificationsFor(viewer, story);
   const visible = popups.map((k) => notes.find((n) => n.key === k)).filter((n): n is StoryNotification => !!n);
 
-  const startCall = () => {
+  const startCall = (to: PersonId) => {
     setPopups([]);
-    setCalling(true);
+    setCalling(to);
   };
-  const close = (n: StoryNotification) => setPopups((p) => p.filter((k) => k !== n.key));
+  const openMessage = useCallback((to: PersonId) => setMessaging(to), []);
+  const closeMessage = useCallback(() => setMessaging(null), []);
+
+  /** After a pop-up goes away, bring in the next one this person hasn't seen yet. */
+  const showNext = () =>
+    window.setTimeout(() => {
+      const next = notificationsFor(viewer, storyRef.current).find((x) => !shownRef.current.has(x.key));
+      if (!next) return;
+      shownRef.current.add(next.key);
+      setPopups((p) => [...p, next.key]);
+    }, 1200);
+
+  const close = (n: StoryNotification) => {
+    setPopups((p) => p.filter((k) => k !== n.key));
+    showNext();
+  };
   const act = (n: StoryNotification, a: NoteAction) => {
-    close(n);
-    if (a.kind === 'record') dispatch({ type: 'record', taskId: a.taskId, status: a.status, by: viewer });
-    if (a.kind === 'seen') dispatch({ type: 'seen', updateId: a.updateId, who: viewer });
-    if (a.kind === 'remind') dispatch({ type: 'remind', by: viewer });
-    if (a.kind === 'call') startCall();
+    setPopups((p) => p.filter((k) => k !== n.key));
+    if (n.messageId) dispatch({ type: 'read', messageId: n.messageId });
+    switch (a.kind) {
+      case 'record':
+        dispatch({ type: 'record', taskId: a.taskId, status: a.status, by: viewer });
+        break;
+      case 'seen':
+        dispatch({ type: 'seen', updateId: a.updateId, who: viewer });
+        break;
+      case 'remind':
+        dispatch({ type: 'remind', by: viewer });
+        break;
+      case 'reply':
+        dispatch({ type: 'message', from: viewer, to: a.to, text: a.text });
+        break;
+      case 'water':
+        dispatch({ type: 'water' });
+        break;
+      case 'mood':
+        dispatch({ type: 'mood', value: a.value });
+        break;
+      case 'respond':
+        dispatch({ type: 'respond', who: viewer });
+        break;
+      case 'willBuy':
+        dispatch({ type: 'willBuy', medId: a.medId, who: viewer });
+        break;
+      case 'bought':
+        dispatch({ type: 'bought', medId: a.medId, who: viewer });
+        break;
+      case 'buyReminder':
+        dispatch({ type: 'buyReminder', medId: a.medId, from: viewer, to: a.to });
+        break;
+      case 'dismiss':
+        dispatch({ type: 'dismiss', who: viewer, key: n.key });
+        break;
+      case 'call':
+        startCall(a.to);
+        return;
+    }
+    showNext();
+  };
+
+  // Opening a person's messages marks them as read.
+  const readAll = () => {
+    for (const m of story.messages) if (m.to === viewer && !m.read) dispatch({ type: 'read', messageId: m.id });
   };
 
   const person = PEOPLE[viewer];
@@ -168,15 +228,26 @@ export function PresentPage() {
       </header>
 
       <main id="main" tabIndex={-1} className="mx-auto max-w-6xl px-4 py-8 outline-none sm:py-10">
-        <View key={viewer} story={story} dispatch={dispatch} onCall={startCall} />
+        <View key={viewer} story={story} dispatch={dispatch} onCall={startCall} onMessage={openMessage} />
       </main>
 
       <PopupStack notes={visible} onAction={act} onClose={close} />
       <CallOverlay
-        open={calling}
+        to={calling}
+        viewer={viewer}
         onEnd={(seconds) => {
-          setCalling(false);
-          dispatch({ type: 'called', by: viewer, seconds });
+          if (calling) dispatch({ type: 'called', by: viewer, to: calling, seconds });
+          setCalling(null);
+        }}
+      />
+      <MessageDialog
+        to={messaging}
+        viewer={viewer}
+        onClose={closeMessage}
+        onSend={(to, text) => {
+          readAll();
+          dispatch({ type: 'message', from: viewer, to, text });
+          setMessaging(null);
         }}
       />
     </div>

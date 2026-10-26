@@ -2,7 +2,12 @@ import {
   Bell,
   Check,
   CheckCheck,
+  DoorOpen,
   Footprints,
+  Heart,
+  LifeBuoy,
+  Send,
+  ShoppingCart,
   GlassWater,
   Lock,
   MessageSquareText,
@@ -22,8 +27,16 @@ import { CategoryIcon } from '@/features/tasks/CategoryIcon';
 import { cn } from '@/lib/cn';
 import type { NoteAction, StoryNotification } from './notifications';
 import {
+  BUY_SOON_DAYS,
+  ORDER,
   PEOPLE,
   clock,
+  contactName,
+  daysLeft,
+  rota,
+  runsOutOn,
+  type Message,
+  type StoryState,
   isDone,
   minutesOf,
   nameFor,
@@ -55,6 +68,10 @@ export function Avatar({ person, className }: { person: PersonId; className?: st
 }
 
 const noteIcons = {
+  help: LifeBuoy,
+  heart: Heart,
+  cart: ShoppingCart,
+  home: DoorOpen,
   pill: Pill,
   water: GlassWater,
   meal: UtensilsCrossed,
@@ -411,11 +428,20 @@ export function UpdatesFeed({
   );
 }
 
-/** A pretend phone call, so "Call Mum" can be shown on camera. */
-export function CallOverlay({ open, onEnd }: { open: boolean; onEnd: (seconds: number) => void }) {
+/** A pretend phone call, so calling anyone in the circle can be shown on camera. */
+export function CallOverlay({
+  to,
+  viewer,
+  onEnd,
+}: {
+  to: PersonId | null;
+  viewer: PersonId;
+  onEnd: (seconds: number) => void;
+}) {
   const [seconds, setSeconds] = useState(0);
   const [connected, setConnected] = useState(false);
   const endRef = useRef<HTMLButtonElement>(null);
+  const open = to !== null;
 
   useEffect(() => {
     if (!open) return;
@@ -435,26 +461,27 @@ export function CallOverlay({ open, onEnd }: { open: boolean; onEnd: (seconds: n
     };
   }, [open]);
 
-  if (!open) return null;
+  if (!to) return null;
   const talkTime = Math.max(0, seconds - 3);
   const end = () => onEnd(connected ? talkTime : 0);
+  const label = capitalise(contactName(to, viewer));
   return (
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Calling Mum"
+      aria-label={`Calling ${label}`}
       className="fixed inset-0 z-[60] flex items-center justify-center bg-ink/60 p-4 animate-[fade-in_0.2s_ease-out]"
     >
       <div className="w-full max-w-xs rounded-3xl bg-brand-900 px-6 py-10 text-center text-white shadow-2xl">
         <div className="relative mx-auto flex size-24 items-center justify-center">
           {!connected && <span className="absolute inset-0 animate-ping rounded-full bg-brand-400/40" />}
-          <span className="relative flex size-24 items-center justify-center rounded-full bg-accent-300 text-3xl font-semibold text-ink">
-            M
-          </span>
+          <Avatar person={to} className="relative size-24 text-3xl" />
         </div>
-        <p className="mt-6 text-2xl font-semibold">Mum</p>
+        <p className="mt-6 text-2xl font-semibold">{label}</p>
         <p className="mt-1 text-brand-200" aria-live="polite">
-          {connected ? `Connected · 0:${String(talkTime).padStart(2, '0')}` : 'Calling mobile…'}
+          {connected
+            ? `Connected · ${Math.floor(talkTime / 60)}:${String(talkTime % 60).padStart(2, '0')}`
+            : 'Calling mobile…'}
         </p>
         <button
           ref={endRef}
@@ -469,6 +496,357 @@ export function CallOverlay({ open, onEnd }: { open: boolean; onEnd: (seconds: n
     </div>
   );
 }
+
+const capitalise = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
+
+/** Everyone else in the circle, one tap to call or message. */
+export function ContactsCard({
+  viewer,
+  onCall,
+  onMessage,
+  big = false,
+}: {
+  viewer: PersonId;
+  onCall: (p: PersonId) => void;
+  onMessage: (p: PersonId) => void;
+  big?: boolean;
+}) {
+  const people = ORDER.filter((p) => p !== viewer);
+  return (
+    <Card padding="none" className="divide-y divide-line overflow-hidden">
+      {people.map((p) => (
+        <div key={p} className={cn('flex flex-wrap items-center gap-3 px-4 py-3', big && 'py-4')}>
+          <Avatar person={p} className={big ? 'size-12 text-base' : undefined} />
+          <div className="min-w-0 flex-1">
+            <p className={cn('font-semibold', big && 'text-lg')}>{capitalise(contactName(p, viewer))}</p>
+            <p className="text-sm text-ink-muted">{PEOPLE[p].relation}</p>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              size={big ? 'lg' : 'sm'}
+              icon={<Phone className="size-4" aria-hidden="true" />}
+              onClick={() => onCall(p)}
+              aria-label={`Call ${contactName(p, viewer)}`}
+            >
+              Call
+            </Button>
+            <Button
+              size={big ? 'lg' : 'sm'}
+              variant="secondary"
+              icon={<MessageSquareText className="size-4" aria-hidden="true" />}
+              onClick={() => onMessage(p)}
+              aria-label={`Message ${contactName(p, viewer)}`}
+            >
+              Message
+            </Button>
+          </div>
+        </div>
+      ))}
+    </Card>
+  );
+}
+
+const QUICK: Record<PersonId, string[]> = {
+  mum: [
+    'I’m okay, don’t worry 🙂',
+    'Could you call me when you’re free?',
+    'Thank you for today ❤️',
+    'I’ve taken my tablets',
+  ],
+  me: [
+    'How are you feeling, Mum? ❤️',
+    'I’ll call you at lunchtime',
+    'Could you check on Mum this morning?',
+    'Thank you!',
+  ],
+  ram: ['I’m on my way', 'Mum is doing well today', 'Mum seems a bit tired, worth a call', 'Running a little late'],
+  dad: ['Thinking of you ❤️', 'See you at lunch', 'I’ll pick up the shopping', 'Can you check on Mum?'],
+};
+
+/** Write a private message to one person, with quick suggestions. */
+export function MessageDialog({
+  to,
+  viewer,
+  onSend,
+  onClose,
+}: {
+  to: PersonId | null;
+  viewer: PersonId;
+  onSend: (to: PersonId, text: string) => void;
+  onClose: () => void;
+}) {
+  const [text, setText] = useState('');
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => {
+    if (!to) return;
+    inputRef.current?.focus();
+    const escape = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    window.addEventListener('keydown', escape);
+    return () => {
+      window.removeEventListener('keydown', escape);
+      setText('');
+    };
+  }, [to, onClose]);
+  if (!to) return null;
+  const send = (t: string) => {
+    if (!t.trim()) return;
+    onSend(to, t.trim());
+  };
+  const name = contactName(to, viewer);
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="message-title"
+      className="fixed inset-0 z-[60] flex items-end justify-center bg-ink/50 p-4 animate-[fade-in_0.2s_ease-out] sm:items-center"
+    >
+      <Card padding="lg" className="w-full max-w-md shadow-2xl">
+        <div className="flex items-center gap-3">
+          <Avatar person={to} />
+          <h2 id="message-title" className="flex-1 text-lg font-semibold">
+            Message {name}
+          </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="inline-flex size-9 items-center justify-center rounded-lg hover:bg-surface"
+          >
+            <X className="size-5" aria-hidden="true" />
+          </button>
+        </div>
+        <p className="mt-1 text-sm text-ink-muted">Only {name} will see this.</p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {QUICK[viewer].map((q) => (
+            <button
+              key={q}
+              type="button"
+              onClick={() => send(q)}
+              className="rounded-full border border-line-strong px-3 py-1.5 text-sm hover:border-brand-400 hover:bg-brand-50"
+            >
+              {q}
+            </button>
+          ))}
+        </div>
+        <form
+          className="mt-4 space-y-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            send(text);
+          }}
+        >
+          <label htmlFor="message-text" className="sr-only">
+            Your message
+          </label>
+          <textarea
+            id="message-text"
+            ref={inputRef}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            rows={3}
+            placeholder="Or write your own…"
+            className="block w-full rounded-xl border border-line-strong bg-canvas px-3.5 py-2.5 text-[0.9375rem] placeholder:text-ink-subtle"
+          />
+          <Button type="submit" fullWidth disabled={!text.trim()} icon={<Send className="size-4" aria-hidden="true" />}>
+            Send
+          </Button>
+        </form>
+      </Card>
+    </div>
+  );
+}
+
+/** This person's private messages, newest first. */
+export function MessagesCard({
+  viewer,
+  messages,
+  onReply,
+  onCall,
+}: {
+  viewer: PersonId;
+  messages: Message[];
+  onReply: (p: PersonId) => void;
+  onCall: (p: PersonId) => void;
+}) {
+  const mine = messages.filter((m) => m.to === viewer || m.from === viewer).sort((a, b) => b.at - a.at);
+  if (mine.length === 0) {
+    return (
+      <Card>
+        <p className="text-ink-muted">No messages yet.</p>
+      </Card>
+    );
+  }
+  return (
+    <Card padding="none" className="divide-y divide-line overflow-hidden">
+      {mine.slice(0, 5).map((m) => {
+        const incoming = m.to === viewer;
+        const other = incoming ? m.from : m.to;
+        return (
+          <div
+            key={m.id}
+            className={cn('px-4 py-3 animate-[cc-pop_0.3s_ease-out]', incoming && !m.read && 'bg-info-50/60')}
+          >
+            <div className="flex items-center gap-2 text-sm">
+              <Avatar person={other} className="size-7 text-[0.6875rem]" />
+              <span className="font-semibold">
+                {incoming ? `From ${contactName(other, viewer)}` : `To ${contactName(other, viewer)}`}
+              </span>
+              {incoming && !m.read && <Badge tone="info">New</Badge>}
+              <span className="ml-auto text-ink-subtle">{clock(m.at)}</span>
+            </div>
+            <p className="mt-1.5">{m.text}</p>
+            {incoming && (
+              <div className="mt-2 flex gap-3 text-sm">
+                <button
+                  type="button"
+                  onClick={() => onReply(other)}
+                  className="font-semibold text-brand-700 hover:underline"
+                >
+                  Reply
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onCall(other)}
+                  className="font-semibold text-brand-700 hover:underline"
+                >
+                  Call back
+                </button>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </Card>
+  );
+}
+
+/** Who is visiting Mum today. */
+export function RotaCard({ story, viewer }: { story: StoryState; viewer: PersonId }) {
+  return (
+    <Card padding="none" className="divide-y divide-line overflow-hidden">
+      {rota(story).map((r) => (
+        <div key={r.time + r.who} className="flex items-center gap-3 px-4 py-3">
+          <span className="w-[4.5rem] shrink-0 whitespace-nowrap text-sm font-semibold tabular-nums">{r.time}</span>
+          <Avatar person={r.who} className="size-8 text-xs" />
+          <div className="min-w-0 flex-1">
+            <p className="font-medium">
+              {nameFor(r.who, viewer)} · {r.what}
+            </p>
+            <p className={cn('text-sm', r.live ? 'font-medium text-brand-700' : 'text-ink-muted')}>{r.status}</p>
+          </div>
+        </div>
+      ))}
+    </Card>
+  );
+}
+
+/** Medicine supply: what was bought, how long it lasts, and who is buying more. */
+export function MedicineTracker({
+  story,
+  viewer,
+  dispatch,
+}: {
+  story: StoryState;
+  viewer: PersonId;
+  dispatch: (a: StoryAction) => void;
+}) {
+  const other: PersonId = viewer === 'me' ? 'dad' : 'me';
+  return (
+    <Card padding="none" className="divide-y divide-line overflow-hidden">
+      {story.medicines.map((m) => {
+        const d = daysLeft(m);
+        const tone = d <= BUY_SOON_DAYS ? 'danger' : d <= 10 ? 'warning' : 'success';
+        const pct = Math.min(100, (m.left / m.boughtQty) * 100);
+        return (
+          <div key={m.id} className="px-4 py-4">
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <div className="flex items-start gap-3">
+                <CategoryIcon category="medication" />
+                <div>
+                  <p className="font-semibold">{m.name}</p>
+                  <p className="text-sm text-ink-muted">{m.purpose}</p>
+                </div>
+              </div>
+              <Badge tone={tone}>
+                {d <= BUY_SOON_DAYS ? 'Buy soon · ' : ''}
+                {d} days left
+              </Badge>
+            </div>
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-surface" aria-hidden="true">
+              <div
+                className={cn(
+                  'h-full rounded-full transition-[width] duration-500',
+                  tone === 'danger' ? 'bg-danger-600' : tone === 'warning' ? 'bg-accent-400' : 'bg-brand-600',
+                )}
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+            <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 text-sm sm:grid-cols-4">
+              <div>
+                <dt className="text-ink-subtle">Left</dt>
+                <dd className="font-medium">
+                  {m.left} {m.unit}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-ink-subtle">Uses</dt>
+                <dd className="font-medium">{m.perDay} a day</dd>
+              </div>
+              <div>
+                <dt className="text-ink-subtle">Runs out</dt>
+                <dd className={cn('font-medium', tone === 'danger' && 'text-danger-700')}>{runsOutOn(m)}</dd>
+              </div>
+              <div>
+                <dt className="text-ink-subtle">Last bought</dt>
+                <dd className="font-medium">
+                  {m.boughtQty} {m.unit} on {m.boughtOn}, by {lowerYour(nameFor(m.boughtBy, viewer))}
+                </dd>
+              </div>
+            </dl>
+            {viewer !== 'mum' && (
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                {m.buyer ? (
+                  <>
+                    <p className="text-sm font-medium text-brand-700">
+                      {m.buyer === viewer ? 'You’re buying more' : `${nameFor(m.buyer, viewer)} is buying more`}
+                    </p>
+                    {m.buyer === viewer && (
+                      <Button size="sm" onClick={() => dispatch({ type: 'bought', medId: m.id, who: viewer })}>
+                        Mark as bought
+                      </Button>
+                    )}
+                  </>
+                ) : (
+                  d <= 10 && (
+                    <>
+                      <Button
+                        size="sm"
+                        variant={d <= BUY_SOON_DAYS ? 'primary' : 'secondary'}
+                        onClick={() => dispatch({ type: 'willBuy', medId: m.id, who: viewer })}
+                      >
+                        I’ll buy it
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        icon={<Send className="size-4" aria-hidden="true" />}
+                        onClick={() => dispatch({ type: 'buyReminder', medId: m.id, from: viewer, to: other })}
+                      >
+                        {other === 'dad' ? 'Remind Dad to buy' : 'Remind our daughter'}
+                      </Button>
+                    </>
+                  )
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </Card>
+  );
+}
+
+const lowerYour = (name: string) => (name.startsWith('Your ') ? `y${name.slice(1)}` : name);
 
 export function ProgressCard({ tasks, label }: { tasks: Task[]; label: string }) {
   const done = tasks.filter(isDone).length;
