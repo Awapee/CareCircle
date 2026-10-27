@@ -184,7 +184,7 @@ export function notificationsFor(viewer: PersonId, s: StoryState): StoryNotifica
       key: `mood-${s.mood.at}`,
       tone: 'alert',
       icon: 'heart',
-      title: `Mum is feeling ${MOODS[s.mood.value].label.toLowerCase()} today`,
+      title: s.mood.value === 'low' ? 'Mum isn’t feeling great today' : 'Mum is feeling unwell today',
       body: `She checked in at ${clock(s.mood.at)}. Maybe give her a call.`,
       actions: [
         { kind: 'call', label: 'Call Mum', to: 'mum' },
